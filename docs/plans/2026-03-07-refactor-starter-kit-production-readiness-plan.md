@@ -1019,9 +1019,9 @@ group('Router redirect', () {
 
 **Acceptance criteria:**
 
-- [ ] All redirect scenarios tested
-- [ ] Tests use mocked auth state (not real Firebase)
-- [ ] Onboarding redirect tested
+- [x] All redirect scenarios tested
+- [x] Tests use mocked auth state (not real Firebase)
+- [x] Onboarding redirect tested
 
 ##### 3.2 Add error path tests (T2)
 
@@ -1044,9 +1044,9 @@ group('error handling', () {
 
 **Acceptance criteria:**
 
-- [ ] At least 6 error path tests across auth and profile services
-- [ ] Tests verify correct exception types are thrown
-- [ ] Tests verify error messages are appropriate
+- [x] At least 6 error path tests across auth and profile services
+- [x] Tests verify correct exception types are thrown
+- [x] Tests verify error messages are appropriate
 
 ##### 3.3 Add widget tests for screens (T3)
 
@@ -1072,10 +1072,10 @@ testWidgets('AuthScreen shows social login buttons', (tester) async {
 
 **Acceptance criteria:**
 
-- [ ] Each screen has at least 2 widget tests
-- [ ] Tests verify correct widgets render
-- [ ] Tests verify user interactions (tap handlers)
-- [ ] Tests use provider overrides for dependency injection
+- [x] Each screen has at least 2 widget tests
+- [x] Tests verify correct widgets render
+- [x] Tests verify user interactions (tap handlers)
+- [x] Tests use provider overrides for dependency injection
 
 ##### 3.4 Add notification tests (T4)
 
@@ -1085,9 +1085,9 @@ testWidgets('AuthScreen shows social login buttons', (tester) async {
 
 **Acceptance criteria:**
 
-- [ ] FcmService initialization tested
-- [ ] Token refresh handler tested
-- [ ] Token storage delegation tested
+- [x] FcmService initialization tested
+- [x] Token refresh handler tested
+- [x] Token storage delegation tested
 
 ##### 3.5 Add PurchasesService tests (T5)
 
@@ -1097,9 +1097,9 @@ testWidgets('AuthScreen shows social login buttons', (tester) async {
 
 **Acceptance criteria:**
 
-- [ ] Login, logout, purchase, restore methods tested
-- [ ] Error handling tested
-- [ ] CustomerInfo parsing tested
+- [x] Login, logout, purchase, restore methods tested
+- [x] Error handling tested
+- [x] CustomerInfo parsing tested
 
 ##### 3.6 Add shared widget tests (T6)
 
@@ -1110,8 +1110,8 @@ testWidgets('AuthScreen shows social login buttons', (tester) async {
 
 **Acceptance criteria:**
 
-- [ ] `PremiumGate` shows child when premium, shows paywall prompt when not
-- [ ] `LoadingState` renders correctly in loading/loaded/error states
+- [x] `PremiumGate` shows child when premium, shows paywall prompt when not
+- [x] `LoadingState` renders correctly in loading/loaded/error states
 
 ##### 3.7 Remove unused test dependencies (T7)
 
@@ -1121,8 +1121,8 @@ testWidgets('AuthScreen shows social login buttons', (tester) async {
 
 **Acceptance criteria:**
 
-- [ ] `mockito` removed from dev_dependencies
-- [ ] All tests still pass
+- [x] `mockito` removed from dev_dependencies
+- [x] All tests still pass
 
 ---
 

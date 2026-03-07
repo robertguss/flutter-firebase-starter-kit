@@ -54,5 +54,51 @@ void main() {
 
       verify(() => mockUser.delete()).called(1);
     });
+
+    test('deleteAccount does nothing when no current user', () async {
+      when(() => mockAuth.currentUser).thenReturn(null);
+
+      // Should complete without error when user is null
+      await authService.deleteAccount();
+    });
+
+    test('signOut throws when FirebaseAuth.signOut fails', () async {
+      when(() => mockAuth.signOut()).thenThrow(
+        FirebaseAuthException(
+          code: 'network-request-failed',
+          message: 'A network error occurred.',
+        ),
+      );
+
+      expect(
+        () => authService.signOut(),
+        throwsA(isA<FirebaseAuthException>().having(
+          (e) => e.code,
+          'code',
+          'network-request-failed',
+        )),
+      );
+    });
+
+    test('deleteAccount throws when user.delete requires recent login',
+        () async {
+      final mockUser = MockUser();
+      when(() => mockAuth.currentUser).thenReturn(mockUser);
+      when(() => mockUser.delete()).thenThrow(
+        FirebaseAuthException(
+          code: 'requires-recent-login',
+          message: 'This operation requires recent authentication.',
+        ),
+      );
+
+      expect(
+        () => authService.deleteAccount(),
+        throwsA(isA<FirebaseAuthException>().having(
+          (e) => e.code,
+          'code',
+          'requires-recent-login',
+        )),
+      );
+    });
   });
 }
