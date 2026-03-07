@@ -35,12 +35,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsSection(
             title: 'Appearance',
             children: [
-              SwitchListTile(
-                title: const Text('Dark Mode'),
-                value: themeMode == ThemeMode.dark,
-                onChanged: (_) {
-                  ref.read(themeModeProvider.notifier).toggle();
-                },
+              ListTile(
+                title: const Text('Theme'),
+                subtitle: Text(switch (themeMode) {
+                  ThemeMode.system => 'System',
+                  ThemeMode.light => 'Light',
+                  ThemeMode.dark => 'Dark',
+                }),
+                trailing: SegmentedButton<ThemeMode>(
+                  segments: const [
+                    ButtonSegment(value: ThemeMode.system, label: Text('System')),
+                    ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode)),
+                    ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode)),
+                  ],
+                  selected: {themeMode},
+                  onSelectionChanged: (selected) {
+                    ref.read(themeModeProvider.notifier).setMode(selected.first);
+                  },
+                ),
               ),
             ],
           ),

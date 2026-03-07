@@ -12,18 +12,45 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
   @override
   ThemeMode build() {
     final prefs = ref.read(sharedPreferencesProvider);
-    final isDark = prefs.getBool(_key) ?? false;
-    return isDark ? ThemeMode.dark : ThemeMode.light;
+    final raw = prefs.get(_key);
+
+    if (raw is String) return _fromString(raw);
+
+    // Migrate from legacy boolean format
+    if (raw is bool) {
+      final migrated = raw ? 'dark' : 'light';
+      prefs.remove(_key);
+      prefs.setString(_key, migrated);
+      return raw ? ThemeMode.dark : ThemeMode.light;
+    }
+
+    // Default for new installs
+    return ThemeMode.system;
   }
 
-  void toggle() {
-    final isDark = state == ThemeMode.light;
-    state = isDark ? ThemeMode.dark : ThemeMode.light;
-    _saveToPrefs(isDark);
+  void setMode(ThemeMode mode) {
+    state = mode;
+    _saveToPrefs(mode);
   }
 
-  Future<void> _saveToPrefs(bool isDark) async {
+  Future<void> _saveToPrefs(ThemeMode mode) async {
     final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setBool(_key, isDark);
+    await prefs.setString(_key, _toString(mode));
+  }
+
+  static ThemeMode _fromString(String value) {
+    return switch (value) {
+      'light' => ThemeMode.light,
+      'dark' => ThemeMode.dark,
+      _ => ThemeMode.system,
+    };
+  }
+
+  static String _toString(ThemeMode mode) {
+    return switch (mode) {
+      ThemeMode.light => 'light',
+      ThemeMode.dark => 'dark',
+      ThemeMode.system => 'system',
+    };
   }
 }
