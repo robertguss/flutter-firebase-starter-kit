@@ -1,55 +1,47 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_starter_kit/config/environment.dart';
 
 class FcmService {
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  FcmService({FirebaseMessaging? messaging})
+      : messaging = messaging ?? FirebaseMessaging.instance;
+
+  final FirebaseMessaging messaging;
 
   Future<void> initialize() async {
-    final settings = await _messaging.requestPermission();
-    if (kDebugMode) {
-      print('FCM permission status: ${settings.authorizationStatus}');
+    final settings = await messaging.requestPermission();
+    if (EnvironmentConfig.current != Environment.prod) {
+      debugPrint('FCM permission status: ${settings.authorizationStatus}');
     }
 
-    final token = await _messaging.getToken();
-    if (token != null) {
-      await _saveToken(token);
+    final token = await messaging.getToken();
+    if (token != null && EnvironmentConfig.current != Environment.prod) {
+      debugPrint('FCM Token: $token');
     }
 
-    _messaging.onTokenRefresh.listen(_saveToken);
+    messaging.onTokenRefresh.listen((_) {});
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageTap);
 
-    final initialMessage = await _messaging.getInitialMessage();
+    final initialMessage = await messaging.getInitialMessage();
     if (initialMessage != null) {
       _handleMessageTap(initialMessage);
     }
   }
 
-  Future<void> _saveToken(String token) async {
-    if (kDebugMode) {
-      print('FCM Token: $token');
-    }
-  }
-
-  Future<void> saveTokenForUser(String uid) async {
-    final token = await _messaging.getToken();
-    if (token != null) {
-      await FirebaseFirestore.instance.collection('users').doc(uid).update({
-        'fcmToken': token,
-      });
-    }
+  Future<String?> getToken() async {
+    return messaging.getToken();
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
-    if (kDebugMode) {
-      print('Foreground message: ${message.notification?.title}');
+    if (EnvironmentConfig.current != Environment.prod) {
+      debugPrint('Foreground message: ${message.notification?.title}');
     }
   }
 
   void _handleMessageTap(RemoteMessage message) {
-    if (kDebugMode) {
-      print('Message tap: ${message.data}');
+    if (EnvironmentConfig.current != Environment.prod) {
+      debugPrint('Message tap: ${message.data}');
     }
   }
 }

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
-import 'package:flutter_starter_kit/features/auth/services/user_profile_service.dart';
+import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
 import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
-import 'package:flutter_starter_kit/features/paywall/services/purchases_service.dart';
+import 'package:flutter_starter_kit/shared/providers/sign_out_provider.dart';
 import 'package:flutter_starter_kit/features/settings/providers/theme_provider.dart';
 import 'package:flutter_starter_kit/features/settings/widgets/settings_section.dart';
 import 'package:flutter_starter_kit/routing/routes.dart';
@@ -50,11 +50,12 @@ class SettingsScreen extends ConsumerWidget {
                   title: const Text('Restore Purchases'),
                   onTap: () async {
                     try {
-                      final info = await PurchasesService.restorePurchases();
+                      final service = ref.read(purchasesServiceProvider);
+                      final info = await service.restorePurchases();
+                      ref.invalidate(customerInfoProvider);
                       final restored = info.entitlements.active.containsKey(
                         'premium',
                       );
-                      ref.read(isPremiumProvider.notifier).state = restored;
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -98,10 +99,7 @@ class SettingsScreen extends ConsumerWidget {
               ListTile(
                 title: const Text('Sign Out'),
                 onTap: () async {
-                  await ref.read(authServiceProvider).signOut();
-                  if (context.mounted) {
-                    context.go(AppRoutes.auth);
-                  }
+                  await ref.read(signOutProvider.future);
                 },
               ),
               ListTile(
@@ -140,13 +138,11 @@ class SettingsScreen extends ConsumerWidget {
                   Navigator.pop(context);
                   final user = ref.read(authStateProvider).valueOrNull;
                   if (user != null) {
-                    await UserProfileService().deleteProfile(user.uid);
-                    await PurchasesService.logout();
+                    await ref.read(userProfileServiceProvider).deleteProfile(user.uid);
+                    await ref.read(purchasesServiceProvider).logout();
                     await ref.read(authServiceProvider).deleteAccount();
                   }
-                  if (context.mounted) {
-                    context.go(AppRoutes.auth);
-                  }
+                  // Router's refreshListenable handles redirect to /auth
                 },
                 child: const Text('Delete'),
               ),

@@ -1,42 +1,44 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
+import 'package:flutter_starter_kit/config/environment.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 class PurchasesService {
-  static Future<void> initialize() async {
-    await Purchases.setLogLevel(LogLevel.debug);
+  Future<void> initialize() async {
+    final logLevel = EnvironmentConfig.current == Environment.prod
+        ? LogLevel.warn
+        : LogLevel.debug;
+    await Purchases.setLogLevel(logLevel);
 
-    final apiKey =
-        Platform.isIOS
-            ? AppConfig.revenueCatAppleApiKey
-            : AppConfig.revenueCatGoogleApiKey;
+    final apiKey = defaultTargetPlatform == TargetPlatform.iOS
+        ? AppConfig.revenueCatAppleApiKey
+        : AppConfig.revenueCatGoogleApiKey;
 
     await Purchases.configure(PurchasesConfiguration(apiKey));
   }
 
-  static Future<void> login(String uid) async {
+  Future<void> login(String uid) async {
     await Purchases.logIn(uid);
   }
 
-  static Future<void> logout() async {
+  Future<void> logout() async {
     await Purchases.logOut();
   }
 
-  static Future<CustomerInfo> getCustomerInfo() async {
+  Future<CustomerInfo> getCustomerInfo() async {
     return Purchases.getCustomerInfo();
   }
 
-  static Future<Offerings> getOfferings() async {
+  Future<Offerings> getOfferings() async {
     return Purchases.getOfferings();
   }
 
-  static Future<CustomerInfo> purchase(Package package) async {
+  Future<CustomerInfo> purchase(Package package) async {
     final result = await Purchases.purchase(PurchaseParams.package(package));
     return result.customerInfo;
   }
 
-  static Future<CustomerInfo> restorePurchases() async {
+  Future<CustomerInfo> restorePurchases() async {
     return Purchases.restorePurchases();
   }
 }

@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class SocialLoginButtons extends StatelessWidget {
@@ -19,7 +18,7 @@ class SocialLoginButtons extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (Platform.isIOS) ...[
+        if (defaultTargetPlatform == TargetPlatform.iOS) ...[
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
