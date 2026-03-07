@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_starter_kit/features/notifications/services/fcm_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -85,6 +86,36 @@ void main() {
       await service.initialize();
 
       verify(() => mockMessaging.onTokenRefresh).called(1);
+    });
+
+    test('initialize does not log FCM token to console', () async {
+      when(() => mockMessaging.requestPermission())
+          .thenAnswer((_) async => _fakeSettings());
+      when(() => mockMessaging.getToken())
+          .thenAnswer((_) async => 'secret-token-value');
+      when(() => mockMessaging.onTokenRefresh)
+          .thenAnswer((_) => const Stream.empty());
+      when(() => mockMessaging.getInitialMessage())
+          .thenAnswer((_) async => null);
+
+      final logs = <String>[];
+      final originalDebugPrint = debugPrint;
+      debugPrint = (String? message, {int? wrapWidth}) {
+        if (message != null) logs.add(message);
+      };
+
+      try {
+        await service.initialize();
+      } finally {
+        debugPrint = originalDebugPrint;
+      }
+
+      // FCM token should never appear in logs (security risk)
+      expect(
+        logs.any((log) => log.contains('secret-token-value')),
+        isFalse,
+        reason: 'FCM token should not be logged to console',
+      );
     });
   });
 }
