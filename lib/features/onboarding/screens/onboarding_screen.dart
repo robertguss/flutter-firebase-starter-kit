@@ -1,5 +1,7 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/services/user_profile_service.dart';
 import 'package:flutter_starter_kit/features/onboarding/providers/onboarding_provider.dart';
@@ -19,23 +21,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   static const _totalPages = 3;
 
+  // Replace these pages with your app-specific onboarding content.
+  // Keep three pages: overview, key feature, and call to action.
   final _pages = const [
     OnboardingPage(
-      title: 'Welcome',
+      title: 'Welcome to AppName',
       description:
-          'This is your app. Replace this with your value proposition.',
-      icon: Icons.waving_hand,
+          'Your all-in-one solution for staying organized and productive. '
+          'We help you focus on what matters most.',
+      icon: Icons.rocket_launch,
     ),
     OnboardingPage(
-      title: 'Personalize',
+      title: 'Stay on Track',
       description:
-          'Customize your experience. Replace with app-specific preferences.',
-      icon: Icons.tune,
+          'Set goals, track your progress, and celebrate your wins. '
+          'Smart reminders keep you moving forward every day.',
+      icon: Icons.trending_up,
     ),
     OnboardingPage(
-      title: 'Stay Updated',
-      description: 'Enable notifications to never miss important updates.',
-      icon: Icons.notifications_active,
+      title: 'Get Started',
+      description:
+          'You\'re all set! Dive in and explore everything the app has '
+          'to offer. Your journey starts now.',
+      icon: Icons.check_circle_outline,
     ),
   ];
 
@@ -49,6 +57,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final user = ref.read(authStateProvider).valueOrNull;
     if (user != null) {
       await UserProfileService().markOnboardingComplete(user.uid);
+    }
+    if (AppConfig.enableAnalytics) {
+      FirebaseAnalytics.instance.logEvent(name: 'onboarding_complete');
     }
     if (mounted) {
       context.go(AppRoutes.home);

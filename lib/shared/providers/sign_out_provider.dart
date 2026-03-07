@@ -1,7 +1,9 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
-import 'package:flutter_starter_kit/features/notifications/providers/notification_provider.dart';
 import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
 import 'package:flutter_starter_kit/shared/providers/post_auth_bootstrap_provider.dart';
 
@@ -26,7 +28,12 @@ final signOutProvider = FutureProvider<void>((ref) async {
   ref.invalidate(userProfileProvider);
   ref.invalidate(postAuthBootstrapProvider);
 
-  // 4. Sign out (triggers router refresh via refreshListenable)
+  // 4. Clear Crashlytics user identifier
+  if (AppConfig.enableCrashlytics && Firebase.apps.isNotEmpty) {
+    await FirebaseCrashlytics.instance.setUserIdentifier('');
+  }
+
+  // 5. Sign out (triggers router refresh via refreshListenable)
   // NOTE: Do NOT invalidate routerProvider. Do NOT call context.go().
   await ref.read(authServiceProvider).signOut();
 });

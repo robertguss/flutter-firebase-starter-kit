@@ -10,7 +10,6 @@ import 'package:flutter_starter_kit/routing/router.dart';
 import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:flutter_starter_kit/shared/providers/shared_preferences_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -23,12 +23,20 @@ class FeatureComparisonRow extends StatelessWidget {
             child: Icon(
               freeIncluded ? Icons.check_circle : Icons.cancel,
               color: freeIncluded ? Colors.green : Colors.grey,
+              semanticLabel:
+                  freeIncluded
+                      ? '$feature included in free plan'
+                      : '$feature not included in free plan',
             ),
           ),
           Expanded(
             child: Icon(
               premiumIncluded ? Icons.check_circle : Icons.cancel,
               color: premiumIncluded ? Colors.green : Colors.grey,
+              semanticLabel:
+                  premiumIncluded
+                      ? '$feature included in premium plan'
+                      : '$feature not included in premium plan',
             ),
           ),
         ],

@@ -19,6 +19,8 @@ class AppConfig {
   // Feature Flags
   static const bool enablePaywall = true;
   static const bool enableNotifications = true;
+  static const bool enableCrashlytics = true;
+  static const bool enableAnalytics = true;
 
   // Navigation
   static const int bottomNavTabCount = 2;

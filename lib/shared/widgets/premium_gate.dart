@@ -22,7 +22,7 @@ class PremiumGate extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.lock, size: 48),
+              const Icon(Icons.lock, size: 48, semanticLabel: 'Premium feature locked'),
               const SizedBox(height: 16),
               const Text('Premium Feature'),
               const SizedBox(height: 8),

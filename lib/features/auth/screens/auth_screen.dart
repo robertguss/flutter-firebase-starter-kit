@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +26,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     try {
       await ref.read(authServiceProvider).signInWithGoogle();
+      if (AppConfig.enableAnalytics) {
+        FirebaseAnalytics.instance.logEvent(
+          name: 'app_sign_in',
+          parameters: {'method': 'google'},
+        );
+      }
     } on FirebaseAuthException {
       _setError('Authentication error. Please try again.');
     } on PlatformException {
@@ -48,6 +55,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     try {
       await ref.read(authServiceProvider).signInWithApple();
+      if (AppConfig.enableAnalytics) {
+        FirebaseAnalytics.instance.logEvent(
+          name: 'app_sign_in',
+          parameters: {'method': 'apple'},
+        );
+      }
     } on FirebaseAuthException {
       _setError('Authentication error. Please try again.');
     } on PlatformException {
