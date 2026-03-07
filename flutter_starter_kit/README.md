@@ -1,16 +1,37 @@
-# flutter_starter_kit
+# Flutter + Firebase Starter Kit
 
-A new Flutter project.
+Clone -> edit 3 config files -> start building features.
 
-## Getting Started
+## Quick Start
 
-This project is a starting point for a Flutter application.
+1. Clone this repo
+2. Run `flutter pub get`
+3. Configure Firebase: `flutterfire configure`
+4. Edit config files:
+   - `lib/config/app_config.dart` - app name, RevenueCat keys, feature flags
+   - `lib/config/environment.dart` - environment selection
+   - `lib/config/theme.dart` - seed color, font family
+5. Run `flutter run`
 
-A few resources to get you started if this is your first Flutter project:
+## Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Auth: Apple + Google sign-in via Firebase Auth
+- Onboarding: 3-step configurable flow with progress dots
+- Paywall: RevenueCat subscription management
+- Settings: Dark mode, subscription, about, sign out, delete account
+- Push Notifications: FCM with foreground/background handling
+- Navigation: GoRouter with auth guards and bottom nav
+- Theming: Material 3, light + dark mode
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Architecture
+
+Feature-folder structure. Each feature is self-contained and deletable.
+
+## Environment
+
+Set environment at build time:
+
+```bash
+flutter run --dart-define=ENV=dev
+flutter build ios --dart-define=ENV=prod
+```
