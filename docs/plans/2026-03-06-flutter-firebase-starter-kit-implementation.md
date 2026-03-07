@@ -1,12 +1,18 @@
 # Flutter + Firebase Starter Kit Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to
+> implement this plan task-by-task.
 
-**Goal:** Build a reusable Flutter starter kit with Firebase Auth (Apple + Google), onboarding, RevenueCat paywall, settings, push notifications, GoRouter navigation, and Material 3 theming.
+**Goal:** Build a reusable Flutter starter kit with Firebase Auth (Apple +
+Google), onboarding, RevenueCat paywall, settings, push notifications, GoRouter
+navigation, and Material 3 theming.
 
-**Architecture:** Feature-folder structure where each feature is self-contained and deletable. Riverpod for state management, GoRouter for declarative routing with auth/onboarding guards, Firebase for backend services.
+**Architecture:** Feature-folder structure where each feature is self-contained
+and deletable. Riverpod for state management, GoRouter for declarative routing
+with auth/onboarding guards, Firebase for backend services.
 
-**Tech Stack:** Flutter/Dart, Riverpod, GoRouter, Firebase (Auth, Firestore, Cloud Functions, FCM), RevenueCat, shared_preferences, Material 3
+**Tech Stack:** Flutter/Dart, Riverpod, GoRouter, Firebase (Auth, Firestore,
+Cloud Functions, FCM), RevenueCat, shared_preferences, Material 3
 
 ---
 
@@ -31,11 +37,13 @@ Expected: New Flutter project created successfully.
 
 **Step 2: Replace pubspec.yaml dependencies**
 
-Replace the `dependencies` and `dev_dependencies` sections in `flutter_starter_kit/pubspec.yaml`:
+Replace the `dependencies` and `dev_dependencies` sections in
+`flutter_starter_kit/pubspec.yaml`:
 
 ```yaml
 name: flutter_starter_kit
-description: A Flutter + Firebase starter kit with auth, paywall, onboarding, and more.
+description:
+  A Flutter + Firebase starter kit with auth, paywall, onboarding, and more.
 publish_to: "none"
 version: 1.0.0+1
 
@@ -234,14 +242,16 @@ class FirebaseService {
 }
 ```
 
-Note: This requires running `flutterfire configure` to generate `firebase_options.dart`. For now, keep it simple. The engineer will need to run:
+Note: This requires running `flutterfire configure` to generate
+`firebase_options.dart`. For now, keep it simple. The engineer will need to run:
 
 ```bash
 dart pub global activate flutterfire_cli
 flutterfire configure
 ```
 
-Then update the initialize call to pass `DefaultFirebaseOptions.currentPlatform`.
+Then update the initialize call to pass
+`DefaultFirebaseOptions.currentPlatform`.
 
 **Step 2: Create app.dart**
 
@@ -272,7 +282,8 @@ class App extends ConsumerWidget {
 }
 ```
 
-Note: `routerProvider` and `themeModeProvider` will be created in later tasks. This file will be updated as those providers are built.
+Note: `routerProvider` and `themeModeProvider` will be created in later tasks.
+This file will be updated as those providers are built.
 
 **Step 3: Create main.dart**
 
@@ -362,7 +373,8 @@ void main() {
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd flutter_starter_kit && flutter test test/features/settings/providers/theme_provider_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/settings/providers/theme_provider_test.dart`
 Expected: FAIL — `themeModeProvider` not found.
 
 **Step 3: Write the implementation**
@@ -407,7 +419,8 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
 
 **Step 4: Run test to verify it passes**
 
-Run: `cd flutter_starter_kit && flutter test test/features/settings/providers/theme_provider_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/settings/providers/theme_provider_test.dart`
 Expected: PASS
 
 **Step 5: Commit**
@@ -491,7 +504,8 @@ void main() {
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd flutter_starter_kit && flutter test test/features/auth/services/auth_service_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/auth/services/auth_service_test.dart`
 Expected: FAIL — `AuthService` not found.
 
 **Step 3: Write the implementation**
@@ -547,7 +561,8 @@ class AuthService {
 
 **Step 4: Run test to verify it passes**
 
-Run: `cd flutter_starter_kit && flutter test test/features/auth/services/auth_service_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/auth/services/auth_service_test.dart`
 Expected: PASS
 
 **Step 5: Commit**
@@ -630,7 +645,8 @@ void main() {
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd flutter_starter_kit && flutter test test/features/auth/providers/auth_provider_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/auth/providers/auth_provider_test.dart`
 Expected: FAIL — providers not found.
 
 **Step 3: Write the implementation**
@@ -654,7 +670,8 @@ final authStateProvider = StreamProvider<User?>((ref) {
 
 **Step 4: Run test to verify it passes**
 
-Run: `cd flutter_starter_kit && flutter test test/features/auth/providers/auth_provider_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/auth/providers/auth_provider_test.dart`
 Expected: PASS
 
 **Step 5: Commit**
@@ -893,11 +910,13 @@ void main() {
 }
 ```
 
-Note: Add `fake_cloud_firestore: ^3.1.0` to `dev_dependencies` in `pubspec.yaml` before running tests.
+Note: Add `fake_cloud_firestore: ^3.1.0` to `dev_dependencies` in `pubspec.yaml`
+before running tests.
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd flutter_starter_kit && flutter test test/features/auth/services/user_profile_service_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/auth/services/user_profile_service_test.dart`
 Expected: FAIL — `UserProfileService` not found.
 
 **Step 3: Write the implementation**
@@ -948,7 +967,8 @@ class UserProfileService {
 
 **Step 4: Run test to verify it passes**
 
-Run: `cd flutter_starter_kit && flutter test test/features/auth/services/user_profile_service_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/auth/services/user_profile_service_test.dart`
 Expected: PASS
 
 **Step 5: Commit**
@@ -1077,7 +1097,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 });
 ```
 
-Note: `HomeShell`, `HomeScreen`, `OnboardingScreen`, `SettingsScreen`, and `PaywallScreen` will be created in subsequent tasks. This file will produce compile errors until those are built. That's expected — we build incrementally.
+Note: `HomeShell`, `HomeScreen`, `OnboardingScreen`, `SettingsScreen`, and
+`PaywallScreen` will be created in subsequent tasks. This file will produce
+compile errors until those are built. That's expected — we build incrementally.
 
 **Step 5: Commit**
 
@@ -1209,7 +1231,8 @@ void main() {
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd flutter_starter_kit && flutter test test/features/onboarding/providers/onboarding_provider_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/onboarding/providers/onboarding_provider_test.dart`
 Expected: FAIL — provider not found.
 
 **Step 3: Write onboarding provider**
@@ -1244,7 +1267,8 @@ class OnboardingNotifier extends Notifier<int> {
 
 **Step 4: Run test to verify it passes**
 
-Run: `cd flutter_starter_kit && flutter test test/features/onboarding/providers/onboarding_provider_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/onboarding/providers/onboarding_provider_test.dart`
 Expected: PASS
 
 **Step 5: Create onboarding page widget**
@@ -1536,7 +1560,8 @@ void main() {
 
 **Step 3: Run test to verify it fails**
 
-Run: `cd flutter_starter_kit && flutter test test/features/paywall/providers/purchases_provider_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/paywall/providers/purchases_provider_test.dart`
 Expected: FAIL — provider not found.
 
 **Step 4: Write the provider**
@@ -1561,7 +1586,8 @@ final offeringsProvider = FutureProvider<Offerings>((ref) async {
 
 **Step 5: Run test to verify it passes**
 
-Run: `cd flutter_starter_kit && flutter test test/features/paywall/providers/purchases_provider_test.dart`
+Run:
+`cd flutter_starter_kit && flutter test test/features/paywall/providers/purchases_provider_test.dart`
 Expected: PASS
 
 **Step 6: Create feature comparison row widget**
@@ -2251,7 +2277,8 @@ git add -A && git commit -m "feat: add shared widgets (loading_state, premium_ga
 
 **Step 1: Add onboarding check to the router redirect**
 
-Update the `redirect` function in `router.dart` to include onboarding guard logic:
+Update the `redirect` function in `router.dart` to include onboarding guard
+logic:
 
 ```dart
 final routerProvider = Provider<GoRouter>((ref) {
@@ -2343,8 +2370,7 @@ Feature-folder structure. Each feature is self-contained and deletable.
 Set environment at build time:
 ```
 
-flutter run --dart-define=ENV=dev
-flutter build ios --dart-define=ENV=prod
+flutter run --dart-define=ENV=dev flutter build ios --dart-define=ENV=prod
 
 ```
 
@@ -2435,13 +2461,11 @@ void main() {
 
 **Step 2: Run test**
 
-Run: `cd flutter_starter_kit && flutter test test/app_test.dart`
-Expected: PASS
+Run: `cd flutter_starter_kit && flutter test test/app_test.dart` Expected: PASS
 
 **Step 3: Run all tests**
 
-Run: `cd flutter_starter_kit && flutter test`
-Expected: All tests pass.
+Run: `cd flutter_starter_kit && flutter test` Expected: All tests pass.
 
 **Step 4: Commit**
 
