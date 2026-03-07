@@ -784,14 +784,14 @@ service cloud.firestore {
 
 **Acceptance criteria:**
 
-- [ ] `firestore.rules` exists in repo root
-- [ ] Users can only read/write their own `/users/{uid}` document
-- [ ] Field validation merged into each granular rule (no standalone
+- [x] `firestore.rules` exists in repo root
+- [x] Users can only read/write their own `/users/{uid}` document
+- [x] Field validation merged into each granular rule (no standalone
       `allow write`)
-- [ ] Type validation on fields (`onboardingComplete` must be bool, etc.)
-- [ ] `createdAt` immutable on updates
-- [ ] `email` validated against auth token on create
-- [ ] No collection-wide list access
+- [x] Type validation on fields (`onboardingComplete` must be bool, etc.)
+- [x] `createdAt` immutable on updates
+- [x] `email` validated against auth token on create
+- [x] No collection-wide list access
 
 ##### 2.2 Fix account deletion safety (S2 + M5 + H4)
 
@@ -858,14 +858,14 @@ Future<void> _deleteAccount() async {
 
 **Acceptance criteria:**
 
-- [ ] Re-authentication flow before any deletion
-- [ ] Firestore data deleted BEFORE auth account (while token is valid)
-- [ ] Auth account deleted LAST (point of no return)
-- [ ] Loading state shown during deletion
-- [ ] `requires-recent-login` handled with re-auth dialog
-- [ ] All user data cleaned up (Firestore profile, RevenueCat, FCM token)
-- [ ] Error messages are user-friendly, not raw exceptions
-- [ ] Provider invalidation after deletion (no manual `context.go()`)
+- [x] Re-authentication flow before any deletion
+- [x] Firestore data deleted BEFORE auth account (while token is valid)
+- [x] Auth account deleted LAST (point of no return)
+- [x] Loading state shown during deletion
+- [x] `requires-recent-login` handled with re-auth dialog
+- [x] All user data cleaned up (Firestore profile, RevenueCat, FCM token)
+- [x] Error messages are user-friendly, not raw exceptions
+- [x] Provider invalidation after deletion (no manual `context.go()`)
 
 ##### 2.3 Move API keys out of source (S3)
 
@@ -890,9 +890,9 @@ class AppConfig {
 
 **Acceptance criteria:**
 
-- [ ] API keys read from `--dart-define` environment variables
-- [ ] `.env.example` documents required keys
-- [ ] No real API keys in committed source code
+- [x] API keys read from `--dart-define` environment variables
+- [x] `.env.example` documents required keys
+- [x] No real API keys in committed source code
 - [ ] README documents how to set keys
 
 ##### 2.4 Fix .gitignore (S4)
@@ -915,9 +915,9 @@ lib/firebase_options.dart
 
 **Acceptance criteria:**
 
-- [ ] Firebase config files excluded from git
-- [ ] `.env` files excluded (but `.env.example` tracked)
-- [ ] `firebase_options.dart` excluded
+- [x] Firebase config files excluded from git
+- [x] `.env` files excluded (but `.env.example` tracked)
+- [x] `firebase_options.dart` excluded
 
 ##### 2.5 Sanitize error messages (S5)
 
@@ -964,11 +964,11 @@ lib/firebase_options.dart
 
 **Acceptance criteria:**
 
-- [ ] No `error.toString()` shown to users
-- [ ] Errors mapped inline at each call site (no shared utility file)
-- [ ] `FirebaseAuthException`, `PlatformException`, and generic errors handled
+- [x] No `error.toString()` shown to users
+- [x] Errors mapped inline at each call site (no shared utility file)
+- [x] `FirebaseAuthException`, `PlatformException`, and generic errors handled
 - [ ] Full errors logged to Crashlytics (not `print`)
-- [ ] User sees friendly message via SnackBar
+- [x] User sees friendly message via SnackBar
 
 ##### 2.6 Fix sign-out RevenueCat cleanup (S6)
 
@@ -993,7 +993,7 @@ logger.
 
 **Acceptance criteria:**
 
-- [ ] No FCM token printed to console in any build mode
+- [x] No FCM token printed to console in any build mode
 
 ---
 
