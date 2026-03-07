@@ -6,7 +6,7 @@ import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/config/theme.dart';
 import 'package:flutter_starter_kit/features/settings/providers/theme_provider.dart';
 import 'package:flutter_starter_kit/routing/router.dart';
-import 'package:flutter_starter_kit/shared/providers/post_auth_bootstrap_provider.dart';
+import 'package:flutter_starter_kit/features/auth/providers/post_auth_bootstrap_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 
 class App extends ConsumerStatefulWidget {

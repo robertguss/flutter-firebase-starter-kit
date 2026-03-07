@@ -5,7 +5,7 @@ import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
 import 'package:flutter_starter_kit/shared/providers/feature_hooks.dart';
-import 'package:flutter_starter_kit/shared/providers/post_auth_bootstrap_provider.dart';
+import 'package:flutter_starter_kit/features/auth/providers/post_auth_bootstrap_provider.dart';
 
 /// Encapsulates the full sign-out sequence:
 /// 1. Clear FCM token from Firestore (prevent notifications to signed-out device)

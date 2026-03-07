@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
 import 'package:flutter_starter_kit/shared/providers/feature_hooks.dart';
-import 'package:flutter_starter_kit/shared/providers/post_auth_bootstrap_provider.dart';
+import 'package:flutter_starter_kit/features/auth/providers/post_auth_bootstrap_provider.dart';
 
 /// Encapsulates the full account deletion sequence:
 /// 1. Re-authenticate (validates session is fresh)
