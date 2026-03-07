@@ -1,5 +1,6 @@
 name: flutter_starter_kit
-description: A Flutter + Firebase starter kit with auth, paywall, onboarding, and more.
+description:
+  A Flutter + Firebase starter kit with auth, paywall, onboarding, and more.
 publish_to: "none"
 version: 0.1.0+1
 
@@ -41,7 +42,6 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   riverpod_generator: ^2.6.4
   build_runner: ^2.4.15
-  mockito: ^5.4.6
   mocktail: ^1.0.4
   riverpod_lint: ^2.6.4
   custom_lint: ^0.7.5

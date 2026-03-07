@@ -155,5 +155,40 @@ void main() {
         expect(doc.exists, false);
       });
     });
+
+    group('error handling', () {
+      test('markOnboardingComplete throws on nonexistent document', () async {
+        // fake_cloud_firestore's update() on a missing doc throws
+        expect(
+          () => service.markOnboardingComplete('nonexistent'),
+          throwsA(anything),
+        );
+      });
+
+      test('updateFcmToken throws on nonexistent document', () async {
+        expect(
+          () => service.updateFcmToken('nonexistent', 'token'),
+          throwsA(anything),
+        );
+      });
+
+      test('clearFcmToken throws on nonexistent document', () async {
+        expect(
+          () => service.clearFcmToken('nonexistent'),
+          throwsA(anything),
+        );
+      });
+
+      test('getProfile returns null for missing document, not exception',
+          () async {
+        final profile = await service.getProfile('missing-uid');
+        expect(profile, isNull);
+      });
+
+      test('deleteProfile on nonexistent document does not throw', () async {
+        // Firestore delete on missing doc is a no-op
+        await service.deleteProfile('nonexistent');
+      });
+    });
   });
 }
