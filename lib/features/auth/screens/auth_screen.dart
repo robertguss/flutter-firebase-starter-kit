@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
@@ -23,10 +25,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     try {
       await ref.read(authServiceProvider).signInWithGoogle();
-    } catch (error) {
-      setState(() {
-        _error = error.toString();
-      });
+    } on FirebaseAuthException {
+      _setError('Authentication error. Please try again.');
+    } on PlatformException {
+      _setError('Something went wrong. Please try again.');
+    } catch (_) {
+      _setError('Something went wrong. Please try again.');
     } finally {
       if (mounted) {
         setState(() {
@@ -44,16 +48,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     try {
       await ref.read(authServiceProvider).signInWithApple();
-    } catch (error) {
-      setState(() {
-        _error = error.toString();
-      });
+    } on FirebaseAuthException {
+      _setError('Authentication error. Please try again.');
+    } on PlatformException {
+      _setError('Something went wrong. Please try again.');
+    } catch (_) {
+      _setError('Something went wrong. Please try again.');
     } finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  void _setError(String message) {
+    if (mounted) {
+      setState(() {
+        _error = message;
+      });
     }
   }
 

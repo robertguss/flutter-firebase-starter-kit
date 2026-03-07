@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
 import 'package:flutter_starter_kit/features/paywall/widgets/feature_comparison_row.dart';
@@ -34,10 +35,20 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
         );
         router.pop();
       }
-    } catch (error) {
+    } on PlatformException {
       if (mounted) {
         messenger.showSnackBar(
-          SnackBar(content: Text('Restore failed: $error')),
+          const SnackBar(
+            content: Text('Something went wrong. Please try again.'),
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Something went wrong. Please try again.'),
+          ),
         );
       }
     } finally {
@@ -135,12 +146,22 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                                   if (isPremium && mounted) {
                                     router.pop();
                                   }
-                                } catch (error) {
+                                } on PlatformException {
                                   if (mounted) {
                                     messenger.showSnackBar(
-                                      SnackBar(
+                                      const SnackBar(
                                         content: Text(
-                                          'Purchase failed: $error',
+                                          'Something went wrong. Please try again.',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } catch (_) {
+                                  if (mounted) {
+                                    messenger.showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Something went wrong. Please try again.',
                                         ),
                                       ),
                                     );
@@ -162,7 +183,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   );
                 },
                 loading: () => const CircularProgressIndicator(),
-                error: (error, _) => Text('Error: $error'),
+                error: (_, __) => const Text('Unable to load offerings. Please try again.'),
               ),
               const SizedBox(height: 12),
               TextButton(

@@ -74,10 +74,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                         );
                       }
-                    } catch (error) {
+                    } catch (_) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: $error')),
+                          const SnackBar(
+                            content: Text(
+                              'Something went wrong. Please try again.',
+                            ),
+                          ),
                         );
                       }
                     }
