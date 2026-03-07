@@ -26,9 +26,9 @@ Future<void> main() async {
   await FirebaseService.initialize();
 
   // Set up Crashlytics error handlers AFTER Firebase init, BEFORE runApp
-  if (AppConfig.enableCrashlytics) {
+  if (AppConfig.enableCrashlytics && EnvironmentConfig.current.enableCrashlytics) {
     await FirebaseCrashlytics.instance
-        .setCrashlyticsCollectionEnabled(!kDebugMode);
+        .setCrashlyticsCollectionEnabled(true);
 
     FlutterError.onError = (details) {
       FlutterError.presentError(details);

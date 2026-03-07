@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
+import 'package:flutter_starter_kit/config/environment.dart';
 import 'package:flutter_starter_kit/config/theme.dart';
 import 'package:flutter_starter_kit/features/settings/providers/theme_provider.dart';
 import 'package:flutter_starter_kit/routing/router.dart';
@@ -39,6 +40,7 @@ class _AppState extends ConsumerState<App> {
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: themeMode,
+        debugShowCheckedModeBanner: EnvironmentConfig.current.showDebugBanner,
         routerConfig: router,
       ),
     );
