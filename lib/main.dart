@@ -5,8 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/app.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/config/environment.dart';
+import 'package:flutter_starter_kit/features/notifications/providers/notification_provider.dart';
 import 'package:flutter_starter_kit/features/notifications/services/fcm_service.dart';
+import 'package:flutter_starter_kit/features/onboarding/providers/onboarding_provider.dart';
+import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
 import 'package:flutter_starter_kit/features/paywall/services/purchases_service.dart';
+import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
+import 'package:flutter_starter_kit/shared/providers/feature_hooks.dart';
+import 'package:flutter_starter_kit/shared/providers/premium_provider.dart';
 import 'package:flutter_starter_kit/shared/providers/shared_preferences_provider.dart';
 import 'package:flutter_starter_kit/shared/services/firebase_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,13 +29,11 @@ Future<void> main() async {
     await FirebaseCrashlytics.instance
         .setCrashlyticsCollectionEnabled(!kDebugMode);
 
-    // Catch Flutter framework errors
     FlutterError.onError = (details) {
       FlutterError.presentError(details);
       FirebaseCrashlytics.instance.recordFlutterFatalError(details);
     };
 
-    // Catch async/platform errors not handled by Flutter framework
     PlatformDispatcher.instance.onError = (error, stack) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
@@ -45,9 +49,69 @@ Future<void> main() async {
     if (AppConfig.enableNotifications) FcmService().initialize(),
   ]);
 
-  // ProviderScope cannot be const — has overrides for SharedPreferences
+  // Build feature hook lists based on enabled features.
+  // main.dart is the composition root: it imports features to wire up
+  // lifecycle hooks. shared/ never imports from features.
+  final bootstrapHooks = <FeatureHook>[];
+  final signOutHooks = <FeatureHook>[];
+  final deleteAccountHooks = <FeatureHook>[];
+
+  if (AppConfig.enablePaywall) {
+    bootstrapHooks.add((ref, uid) async {
+      await ref.read(purchasesServiceProvider).login(uid);
+    });
+    signOutHooks.add((ref, uid) async {
+      await ref.read(purchasesServiceProvider).logout();
+      ref.invalidate(customerInfoProvider);
+      ref.invalidate(offeringsProvider);
+    });
+    deleteAccountHooks.add((ref, uid) async {
+      await ref.read(purchasesServiceProvider).logout();
+      ref.invalidate(customerInfoProvider);
+    });
+  }
+
+  if (AppConfig.enableNotifications) {
+    bootstrapHooks.add((ref, uid) async {
+      final token = await ref.read(fcmServiceProvider).getToken();
+      if (token != null) {
+        await ref.read(userProfileServiceProvider).updateFcmToken(uid, token);
+      }
+    });
+  }
+
+  // Onboarding state cleanup on sign-out
+  signOutHooks.add((ref, uid) async {
+    ref.invalidate(onboardingProvider);
+  });
+
   runApp(ProviderScope(
-    overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+      bootstrapHooksProvider.overrideWithValue(bootstrapHooks),
+      signOutHooksProvider.overrideWithValue(signOutHooks),
+      deleteAccountHooksProvider.overrideWithValue(deleteAccountHooks),
+      if (AppConfig.enablePaywall) ...[
+        isPremiumProvider.overrideWith((ref) {
+          final customerInfo = ref.watch(customerInfoProvider);
+          return customerInfo.whenOrNull(
+                data: (info) =>
+                    info.entitlements.active.containsKey('premium'),
+              ) ??
+              false;
+        }),
+        restorePurchasesActionProvider.overrideWith((ref) {
+          return () async {
+            final service = ref.read(purchasesServiceProvider);
+            final info = await service.restorePurchases();
+            ref.invalidate(customerInfoProvider);
+            final restored =
+                info.entitlements.active.containsKey('premium');
+            return restored ? 'Purchases restored!' : 'No purchases found';
+          };
+        }),
+      ],
+    ],
     child: const App(),
   ));
 }

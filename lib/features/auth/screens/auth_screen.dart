@@ -1,5 +1,5 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,54 +18,29 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   bool _isLoading = false;
   String? _error;
 
-  Future<void> _signInWithGoogle() async {
+  Future<void> _signIn({
+    required Future<UserCredential> Function() method,
+    required String providerName,
+  }) async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      await ref.read(authServiceProvider).signInWithGoogle();
+      await method();
       if (AppConfig.enableAnalytics) {
         FirebaseAnalytics.instance.logEvent(
           name: 'app_sign_in',
-          parameters: {'method': 'google'},
+          parameters: {'method': providerName},
         );
       }
     } on FirebaseAuthException {
       _setError('Authentication error. Please try again.');
     } on PlatformException {
       _setError('Something went wrong. Please try again.');
-    } catch (_) {
-      _setError('Something went wrong. Please try again.');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _signInWithApple() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      await ref.read(authServiceProvider).signInWithApple();
-      if (AppConfig.enableAnalytics) {
-        FirebaseAnalytics.instance.logEvent(
-          name: 'app_sign_in',
-          parameters: {'method': 'apple'},
-        );
-      }
-    } on FirebaseAuthException {
-      _setError('Authentication error. Please try again.');
-    } on PlatformException {
-      _setError('Something went wrong. Please try again.');
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Sign-in error ($providerName): $e');
       _setError('Something went wrong. Please try again.');
     } finally {
       if (mounted) {
@@ -105,8 +80,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 const SizedBox(height: 16),
               ],
               SocialLoginButtons(
-                onGooglePressed: _signInWithGoogle,
-                onApplePressed: _signInWithApple,
+                onGooglePressed: () => _signIn(
+                  method: ref.read(authServiceProvider).signInWithGoogle,
+                  providerName: 'google',
+                ),
+                onApplePressed: () => _signIn(
+                  method: ref.read(authServiceProvider).signInWithApple,
+                  providerName: 'apple',
+                ),
                 isLoading: _isLoading,
               ),
               const SizedBox(height: 48),

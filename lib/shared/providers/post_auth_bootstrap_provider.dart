@@ -6,8 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
-import 'package:flutter_starter_kit/features/notifications/providers/notification_provider.dart';
-import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
+import 'package:flutter_starter_kit/shared/providers/feature_hooks.dart';
 
 /// Orchestrates all post-sign-in side effects in a defined order.
 /// Watched by the App widget to show loading state during bootstrap.
@@ -18,38 +17,42 @@ final postAuthBootstrapProvider = FutureProvider<void>((ref) async {
 
   final profileService = ref.read(userProfileServiceProvider);
 
-  // 1. Create or update profile (set merge avoids race conditions on concurrent sign-ins)
-  await profileService.createOrUpdateProfile(user.uid, {
-    'email': user.email,
-    'displayName': user.displayName,
-    'photoUrl': user.photoURL,
-    'createdAt': FieldValue.serverTimestamp(),
-    'onboardingComplete': false,
-  });
-
-  // 2. RevenueCat login
-  final purchasesService = ref.read(purchasesServiceProvider);
-  await purchasesService.login(user.uid);
-
-  // 3. FCM token save
-  final fcmService = ref.read(fcmServiceProvider);
-  final token = await fcmService.getToken();
-  if (token != null) {
-    await profileService.updateFcmToken(user.uid, token);
+  // 1. Create profile if it doesn't exist, update mutable fields only.
+  //    Uses set-with-merge so createdAt is only written on first creation.
+  final existingProfile = await profileService.getProfile(user.uid);
+  if (existingProfile == null) {
+    await profileService.createOrUpdateProfile(user.uid, {
+      'email': user.email,
+      'displayName': user.displayName,
+      'photoUrl': user.photoURL,
+      'createdAt': FieldValue.serverTimestamp(),
+      'onboardingComplete': false,
+    });
+  } else {
+    await profileService.createOrUpdateProfile(user.uid, {
+      'email': user.email,
+      'displayName': user.displayName,
+      'photoUrl': user.photoURL,
+    });
   }
 
-  // 4. Set Crashlytics user identifier for crash report correlation
+  // 2. Run feature-specific bootstrap hooks (RevenueCat login, FCM token, etc.)
+  for (final hook in ref.read(bootstrapHooksProvider)) {
+    await hook(ref, user.uid);
+  }
+
+  // 3. Set Crashlytics user identifier for crash report correlation
   if (AppConfig.enableCrashlytics && Firebase.apps.isNotEmpty) {
     await FirebaseCrashlytics.instance.setUserIdentifier(user.uid);
   }
 
-  // 5. Set Analytics user properties for segmentation
+  // 4. Set Analytics user properties for segmentation
   if (AppConfig.enableAnalytics && Firebase.apps.isNotEmpty) {
-    final customerInfo = await purchasesService.getCustomerInfo();
-    final isPremium = customerInfo.entitlements.active.containsKey('premium');
     FirebaseAnalytics.instance.setUserProperty(
-      name: 'premium_status',
-      value: isPremium ? 'premium' : 'free',
+      name: 'auth_provider',
+      value: user.providerData.isNotEmpty
+          ? user.providerData.first.providerId
+          : 'unknown',
     );
   }
 });

@@ -16,8 +16,11 @@ class FcmService {
 
     await messaging.getToken();
 
+    // TODO: Send refreshed token to your backend for push targeting
     messaging.onTokenRefresh.listen((_) {});
+    // TODO: Show in-app notification UI for foreground messages
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    // TODO: Navigate to relevant screen based on message data
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageTap);
 
     final initialMessage = await messaging.getInitialMessage();

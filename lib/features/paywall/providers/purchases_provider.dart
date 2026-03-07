@@ -6,20 +6,14 @@ final purchasesServiceProvider = Provider<PurchasesService>((ref) {
   return PurchasesService();
 });
 
-final isPremiumProvider = Provider<bool>((ref) {
-  final customerInfo = ref.watch(customerInfoProvider);
-  return customerInfo.whenOrNull(
-        data: (info) => info.entitlements.active.containsKey('premium'),
-      ) ??
-      false;
-});
-
 final customerInfoProvider = FutureProvider<CustomerInfo>((ref) async {
+  ref.keepAlive();
   final service = ref.read(purchasesServiceProvider);
   return service.getCustomerInfo();
 });
 
 final offeringsProvider = FutureProvider<Offerings>((ref) async {
+  ref.keepAlive();
   final service = ref.read(purchasesServiceProvider);
   return service.getOfferings();
 });

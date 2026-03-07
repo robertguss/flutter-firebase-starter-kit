@@ -30,33 +30,46 @@ class _AppState extends ConsumerState<App> {
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
-    final authState = ref.watch(authStateProvider);
 
-    // Watch bootstrap provider when user is signed in to trigger
-    // profile creation, RevenueCat login, and FCM token save.
-    final user = authState.valueOrNull;
-    final bootstrap = user != null
-        ? ref.watch(postAuthBootstrapProvider)
-        : null;
-
-    // Show loading while bootstrap runs after sign-in
-    if (bootstrap != null && bootstrap.isLoading) {
-      return MaterialApp(
+    // Watch bootstrap in a Consumer lower in the tree so auth changes
+    // don't rebuild the entire MaterialApp.
+    return _BootstrapGate(
+      child: MaterialApp.router(
+        title: AppConfig.appName,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: themeMode,
-        home: const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-      );
+        routerConfig: router,
+      ),
+    );
+  }
+}
+
+/// Watches auth + bootstrap state and shows a loading screen during bootstrap.
+/// Separated from App so auth transitions don't rebuild MaterialApp.router.
+class _BootstrapGate extends ConsumerWidget {
+  const _BootstrapGate({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    final user = authState.valueOrNull;
+
+    if (user != null) {
+      final bootstrap = ref.watch(postAuthBootstrapProvider);
+      if (bootstrap.isLoading) {
+        return MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          home: const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          ),
+        );
+      }
     }
 
-    return MaterialApp.router(
-      title: AppConfig.appName,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: themeMode,
-      routerConfig: router,
-    );
+    return child;
   }
 }

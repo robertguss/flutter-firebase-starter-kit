@@ -17,9 +17,24 @@ import 'package:go_router/go_router.dart';
 // Bridges Riverpod auth state to GoRouter's refreshListenable.
 // GoRouter re-evaluates redirect when notifyListeners() fires.
 class AuthChangeNotifier extends ChangeNotifier {
+  bool? _wasLoggedIn;
+  bool? _wasOnboardingComplete;
+
   AuthChangeNotifier(Ref ref) {
-    ref.listen(authStateProvider, (_, __) => notifyListeners());
-    ref.listen(userProfileProvider, (_, __) => notifyListeners());
+    ref.listen(authStateProvider, (_, next) {
+      final isLoggedIn = next.valueOrNull != null;
+      if (isLoggedIn != _wasLoggedIn) {
+        _wasLoggedIn = isLoggedIn;
+        notifyListeners();
+      }
+    });
+    ref.listen(userProfileProvider, (_, next) {
+      final isComplete = next.valueOrNull?.onboardingComplete;
+      if (isComplete != _wasOnboardingComplete) {
+        _wasOnboardingComplete = isComplete;
+        notifyListeners();
+      }
+    });
   }
 }
 
@@ -45,10 +60,6 @@ String? routerRedirect(Ref ref, String location) {
     if (profile != null && !profile.onboardingComplete) {
       return AppRoutes.onboarding;
     }
-  }
-
-  if (isLoggedIn && isOnOnboardingPage) {
-    return null;
   }
 
   return null;

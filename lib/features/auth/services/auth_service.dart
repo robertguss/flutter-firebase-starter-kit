@@ -2,17 +2,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
-  AuthService({FirebaseAuth? firebaseAuth})
-    : firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+  AuthService({FirebaseAuth? firebaseAuth, GoogleSignIn? googleSignIn})
+    : firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
+      _googleSignIn = googleSignIn ?? GoogleSignIn();
 
   final FirebaseAuth firebaseAuth;
+  final GoogleSignIn _googleSignIn;
 
   User? get currentUser => firebaseAuth.currentUser;
 
   Stream<User?> get authStateChanges => firebaseAuth.authStateChanges();
 
   Future<UserCredential> signInWithGoogle() async {
-    final googleUser = await GoogleSignIn().signIn();
+    final googleUser = await _googleSignIn.signIn();
     if (googleUser == null) {
       throw Exception('Google sign-in was cancelled');
     }
@@ -32,6 +34,7 @@ class AuthService {
   }
 
   Future<void> signOut() async {
+    await _googleSignIn.signOut();
     await firebaseAuth.signOut();
   }
 
@@ -47,7 +50,7 @@ class AuthService {
     if (providerId == 'apple.com') {
       await user.reauthenticateWithProvider(AppleAuthProvider());
     } else if (providerId == 'google.com') {
-      final googleUser = await GoogleSignIn().signIn();
+      final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         throw FirebaseAuthException(
           code: 'requires-recent-login',

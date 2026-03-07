@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
-import 'package:flutter_starter_kit/shared/widgets/premium_gate.dart';
+import 'package:flutter_starter_kit/shared/providers/premium_provider.dart';
+import 'package:flutter_starter_kit/features/paywall/widgets/premium_gate.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

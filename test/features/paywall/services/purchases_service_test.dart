@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
 import 'package:flutter_starter_kit/features/paywall/services/purchases_service.dart';
+import 'package:flutter_starter_kit/shared/providers/premium_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -113,6 +114,14 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           purchasesServiceProvider.overrideWithValue(mockService),
+          isPremiumProvider.overrideWith((ref) {
+            final customerInfo = ref.watch(customerInfoProvider);
+            return customerInfo.whenOrNull(
+                  data: (info) =>
+                      info.entitlements.active.containsKey('premium'),
+                ) ??
+                false;
+          }),
         ],
       );
       addTearDown(container.dispose);
@@ -135,6 +144,14 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           purchasesServiceProvider.overrideWithValue(mockService),
+          isPremiumProvider.overrideWith((ref) {
+            final customerInfo = ref.watch(customerInfoProvider);
+            return customerInfo.whenOrNull(
+                  data: (info) =>
+                      info.entitlements.active.containsKey('premium'),
+                ) ??
+                false;
+          }),
         ],
       );
       addTearDown(container.dispose);
@@ -151,6 +168,14 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           purchasesServiceProvider.overrideWithValue(mockService),
+          isPremiumProvider.overrideWith((ref) {
+            final customerInfo = ref.watch(customerInfoProvider);
+            return customerInfo.whenOrNull(
+                  data: (info) =>
+                      info.entitlements.active.containsKey('premium'),
+                ) ??
+                false;
+          }),
         ],
       );
       addTearDown(container.dispose);

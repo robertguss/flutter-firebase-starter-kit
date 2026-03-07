@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
-import 'package:flutter_starter_kit/features/paywall/services/purchases_service.dart';
+import 'package:flutter_starter_kit/shared/providers/premium_provider.dart';
 import 'package:flutter_starter_kit/features/settings/screens/settings_screen.dart';
 import 'package:flutter_starter_kit/shared/providers/shared_preferences_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class MockPurchasesService extends Mock implements PurchasesService {}
 
 void main() {
   late SharedPreferences prefs;
@@ -23,7 +19,6 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         isPremiumProvider.overrideWithValue(isPremium),
-        purchasesServiceProvider.overrideWithValue(MockPurchasesService()),
       ],
       child: const MaterialApp(home: SettingsScreen()),
     );

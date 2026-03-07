@@ -57,7 +57,9 @@ class ProfileScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Error: $error')),
+        error: (_, __) => const Center(
+          child: Text('Something went wrong. Please try again.'),
+        ),
       ),
     );
   }

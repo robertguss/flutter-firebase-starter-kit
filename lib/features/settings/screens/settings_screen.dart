@@ -2,19 +2,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
-import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
 import 'package:flutter_starter_kit/shared/providers/delete_account_provider.dart';
+import 'package:flutter_starter_kit/shared/providers/feature_hooks.dart';
+import 'package:flutter_starter_kit/shared/providers/premium_provider.dart';
 import 'package:flutter_starter_kit/shared/providers/sign_out_provider.dart';
+import 'package:flutter_starter_kit/features/settings/providers/package_info_provider.dart';
 import 'package:flutter_starter_kit/features/settings/providers/theme_provider.dart';
 import 'package:flutter_starter_kit/features/settings/widgets/settings_section.dart';
 import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:go_router/go_router.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-final packageInfoProvider = FutureProvider<PackageInfo>(
-  (ref) => PackageInfo.fromPlatform(),
-);
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -61,22 +58,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ListTile(
                   title: const Text('Restore Purchases'),
                   onTap: () async {
+                    final restoreAction = ref.read(restorePurchasesActionProvider);
+                    if (restoreAction == null) return;
                     try {
-                      final service = ref.read(purchasesServiceProvider);
-                      final info = await service.restorePurchases();
-                      ref.invalidate(customerInfoProvider);
-                      final restored = info.entitlements.active.containsKey(
-                        'premium',
-                      );
+                      final message = await restoreAction();
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              restored
-                                  ? 'Purchases restored!'
-                                  : 'No purchases found',
-                            ),
-                          ),
+                          SnackBar(content: Text(message)),
                         );
                       }
                     } catch (_) {
