@@ -28,8 +28,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.home;
       }
 
-      // Note: Onboarding completion should be driven by cached profile state
-      // rather than an async Firestore call inside redirect.
+      // TODO: Add a cached onboardingComplete provider to redirect authenticated
+      // users into onboarding without making async Firestore reads here.
       if (isLoggedIn && isOnOnboardingPage) {
         return null;
       }
