@@ -6,6 +6,7 @@ import 'package:flutter_starter_kit/features/auth/screens/auth_screen.dart';
 import 'package:flutter_starter_kit/features/home/screens/home_screen.dart';
 import 'package:flutter_starter_kit/features/onboarding/screens/onboarding_screen.dart';
 import 'package:flutter_starter_kit/features/paywall/screens/paywall_screen.dart';
+import 'package:flutter_starter_kit/features/profile/screens/profile_screen.dart';
 import 'package:flutter_starter_kit/features/settings/screens/settings_screen.dart';
 import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:go_router/go_router.dart';
@@ -69,13 +70,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.onboarding,
         builder: (context, state) => const OnboardingScreen(),
       ),
-      ShellRoute(
-        builder: (context, state, child) => HomeShell(child: child),
-        routes: [
-          GoRoute(
-            path: AppRoutes.home,
-            builder: (context, state) => const HomeScreen(),
-          ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return HomeShell(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: AppRoutes.home,
+              builder: (context, state) => const HomeScreen(),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: AppRoutes.profile,
+              builder: (context, state) => const ProfileScreen(),
+            ),
+          ]),
         ],
       ),
       GoRoute(

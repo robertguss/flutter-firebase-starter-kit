@@ -15,5 +15,5 @@ class AppConfig {
   static const bool enableNotifications = true;
 
   // Navigation
-  static const int bottomNavTabCount = 3;
+  static const int bottomNavTabCount = 2;
 }
