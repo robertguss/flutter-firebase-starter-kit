@@ -1,7 +1,6 @@
 # Design: Flutter + Firebase Starter Kit
 
-**Date:** 2026-03-06
-**Status:** Approved
+**Date:** 2026-03-06 **Status:** Approved
 
 ---
 
@@ -67,12 +66,14 @@ flutter_starter_kit/
 - Firebase Auth handles OAuth flows
 - User profile stored in Firestore at `users/{uid}`:
   - `displayName`, `email`, `photoUrl`, `createdAt`, `onboardingComplete`
-- Delete account: Firebase Auth deletion + Firestore profile deletion + RevenueCat cleanup
+- Delete account: Firebase Auth deletion + Firestore profile deletion +
+  RevenueCat cleanup
 - GoRouter auth guard redirects unauthenticated users to auth screen
 
 ## Onboarding
 
-- Starter kit provides the skeleton: PageView, progress indicator (dots), skip/next/done buttons
+- Starter kit provides the skeleton: PageView, progress indicator (dots),
+  skip/next/done buttons
 - Persists `onboardingComplete: true` to user's Firestore profile
 - GoRouter guard checks this flag — completed users skip onboarding
 - Each app provides its own screen widgets for each step
@@ -103,7 +104,8 @@ Pre-built items:
 | Sign out                 | Firebase Auth sign-out, clear local state, redirect to auth screen                  |
 | Delete account           | Confirmation dialog, Firestore deletion, Firebase Auth deletion, RevenueCat cleanup |
 
-Material 3 ListTile widgets grouped into sections. Each app can add app-specific settings.
+Material 3 ListTile widgets grouped into sections. Each app can add app-specific
+settings.
 
 ## Push Notifications (FCM)
 
@@ -117,7 +119,8 @@ Fully wired in the starter kit:
 - Tap routing — navigates to configurable screen via GoRouter deep linking
 - Token refresh listener — updates Firestore when token rotates
 
-Each app defines what to send, when, and which screen each notification type routes to.
+Each app defines what to send, when, and which screen each notification type
+routes to.
 
 ## Navigation (GoRouter)
 
@@ -140,7 +143,8 @@ Guard logic (in order):
 2. Authenticated but onboarding incomplete -> `/onboarding`
 3. Authenticated + onboarding complete -> `/home`
 
-Shell route with configurable bottom navigation bar (tab count, icons, labels per app). Deep linking support for push notification routing.
+Shell route with configurable bottom navigation bar (tab count, icons, labels
+per app). Deep linking support for push notification routing.
 
 ## Config & Environment
 
@@ -171,8 +175,10 @@ Three files each app overrides:
 
 - Default theme: light mode
 - Dark mode available via settings toggle, persisted in shared_preferences
-- Material 3 design system — lean on built-in components (buttons, cards, inputs, typography)
-- No custom component library — premature until patterns emerge across multiple apps
+- Material 3 design system — lean on built-in components (buttons, cards,
+  inputs, typography)
+- No custom component library — premature until patterns emerge across multiple
+  apps
 
 ## What's Excluded (Added Per-App)
 
@@ -185,4 +191,5 @@ Three files each app overrides:
 
 ## The Promise
 
-Clone -> edit 3 config files (app_config, environment, theme) -> start building features.
+Clone -> edit 3 config files (app_config, environment, theme) -> start building
+features.

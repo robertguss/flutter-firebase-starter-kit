@@ -1,6 +1,7 @@
 # PRD: Flutter + Supabase Starter Kit
 
-**Version:** 1.0 **Date:** March 6, 2026 **Status:** Blueprint for New Repository
+**Version:** 1.0 **Date:** March 6, 2026 **Status:** Blueprint for New
+Repository
 
 ---
 
@@ -33,45 +34,51 @@
 
 ## 1. Purpose
 
-This starter kit eliminates repeated boilerplate when launching new Flutter + Supabase apps. Every app we build shares the same auth flow, paywall, local-first data layer, AI proxy, theming system, and analytics wiring. Instead of rebuilding these from scratch each time, we clone this repo, run a setup script, override a few config files, and go straight to building app-specific features.
+This starter kit eliminates repeated boilerplate when launching new Flutter +
+Supabase apps. Every app we build shares the same auth flow, paywall,
+local-first data layer, AI proxy, theming system, and analytics wiring. Instead
+of rebuilding these from scratch each time, we clone this repo, run a setup
+script, override a few config files, and go straight to building app-specific
+features.
 
-**Goal:** Go from `git clone` to a working app with auth, paywall, dark theme, local database, Supabase sync, and an AI chat endpoint in under 30 minutes.
+**Goal:** Go from `git clone` to a working app with auth, paywall, dark theme,
+local database, Supabase sync, and an AI chat endpoint in under 30 minutes.
 
 ---
 
 ## 2. Design Principles
 
-| Principle | What it means |
-| --- | --- |
-| **Local-first** | All user data writes to local SQLite (Drift) first. Supabase syncs in the background. App works fully offline for non-AI features. |
-| **Local Supabase for dev** | `supabase start` runs Postgres, Auth, Edge Functions, and Storage locally via Docker. No cloud dependency during development. |
-| **Convention over configuration** | Sensible defaults everywhere. New apps override only what's different (colors, tab labels, feature flags). |
-| **Feature-folder architecture** | Each feature is self-contained: screens, widgets, providers, and models in one folder. Easy to delete what you don't need. |
-| **Delete what you don't need** | Every module (chat, paywall, notifications) is opt-in. Remove its folder and its route — nothing breaks. |
-| **No premature abstraction** | Concrete implementations, not abstract frameworks. Copy and modify beats "extend and override." |
+| Principle                         | What it means                                                                                                                      |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Local-first**                   | All user data writes to local SQLite (Drift) first. Supabase syncs in the background. App works fully offline for non-AI features. |
+| **Local Supabase for dev**        | `supabase start` runs Postgres, Auth, Edge Functions, and Storage locally via Docker. No cloud dependency during development.      |
+| **Convention over configuration** | Sensible defaults everywhere. New apps override only what's different (colors, tab labels, feature flags).                         |
+| **Feature-folder architecture**   | Each feature is self-contained: screens, widgets, providers, and models in one folder. Easy to delete what you don't need.         |
+| **Delete what you don't need**    | Every module (chat, paywall, notifications) is opt-in. Remove its folder and its route — nothing breaks.                           |
+| **No premature abstraction**      | Concrete implementations, not abstract frameworks. Copy and modify beats "extend and override."                                    |
 
 ---
 
 ## 3. Tech Stack
 
-| Layer | Technology | Rationale |
-| --- | --- | --- |
-| Framework | **Flutter** | Compiled to native ARM, no JS bridge. Smooth animations and real-time streaming. |
-| Language | **Dart** | Type-safe, AOT-compiled, strong async/stream support for AI responses. |
-| State Management | **Riverpod** | Compile-safe, excellent async stream handling, testable. |
-| Navigation | **GoRouter** | Declarative routing, deep linking, redirect guards for auth/onboarding. |
-| Local Database | **Drift** (SQLite) | Offline-first data storage, type-safe queries, migration support. |
-| Key-Value Storage | **shared_preferences** | Simple prefs (onboarding complete, theme mode, notification settings). |
-| Backend | **Supabase** | Auth, Postgres, Edge Functions, Realtime, Storage. Open-source, self-hostable. |
-| Local Backend | **Supabase CLI** | Full local stack via Docker — Postgres, Auth, Edge Functions, Storage, Studio. |
-| Payments | **RevenueCat** | In-app subscriptions, paywall management, entitlement checks. |
-| Push Notifications | **Firebase Cloud Messaging** | Reliable cross-platform push (FCM works fine alongside Supabase). |
-| Local Notifications | **flutter_local_notifications** | Scheduled daily reminders, streak nudges. |
-| Analytics | **PostHog** | Privacy-friendly, open-source, event tracking + funnels. |
-| Error Tracking | **Sentry** | Crash reporting, performance monitoring. |
-| AI Backend | **OpenAI / Anthropic API** | Proxied through Supabase Edge Functions — never exposed to client. |
-| Audio (optional) | **record + just_audio** | Voice capture and playback for apps that need it. |
-| Networking | **connectivity_plus** | Online/offline detection for sync triggers. |
+| Layer               | Technology                      | Rationale                                                                        |
+| ------------------- | ------------------------------- | -------------------------------------------------------------------------------- |
+| Framework           | **Flutter**                     | Compiled to native ARM, no JS bridge. Smooth animations and real-time streaming. |
+| Language            | **Dart**                        | Type-safe, AOT-compiled, strong async/stream support for AI responses.           |
+| State Management    | **Riverpod**                    | Compile-safe, excellent async stream handling, testable.                         |
+| Navigation          | **GoRouter**                    | Declarative routing, deep linking, redirect guards for auth/onboarding.          |
+| Local Database      | **Drift** (SQLite)              | Offline-first data storage, type-safe queries, migration support.                |
+| Key-Value Storage   | **shared_preferences**          | Simple prefs (onboarding complete, theme mode, notification settings).           |
+| Backend             | **Supabase**                    | Auth, Postgres, Edge Functions, Realtime, Storage. Open-source, self-hostable.   |
+| Local Backend       | **Supabase CLI**                | Full local stack via Docker — Postgres, Auth, Edge Functions, Storage, Studio.   |
+| Payments            | **RevenueCat**                  | In-app subscriptions, paywall management, entitlement checks.                    |
+| Push Notifications  | **Firebase Cloud Messaging**    | Reliable cross-platform push (FCM works fine alongside Supabase).                |
+| Local Notifications | **flutter_local_notifications** | Scheduled daily reminders, streak nudges.                                        |
+| Analytics           | **PostHog**                     | Privacy-friendly, open-source, event tracking + funnels.                         |
+| Error Tracking      | **Sentry**                      | Crash reporting, performance monitoring.                                         |
+| AI Backend          | **OpenAI / Anthropic API**      | Proxied through Supabase Edge Functions — never exposed to client.               |
+| Audio (optional)    | **record + just_audio**         | Voice capture and playback for apps that need it.                                |
+| Networking          | **connectivity_plus**           | Online/offline detection for sync triggers.                                      |
 
 ### Dependencies (pubspec.yaml)
 
@@ -300,18 +307,20 @@ flutter_supabase_starter/
 
 ## 5. Feature Modules
 
-Each feature module is fully self-contained and deletable. If your app doesn't need AI chat, delete `lib/features/chat/` and remove its route from `router.dart`. Nothing else breaks.
+Each feature module is fully self-contained and deletable. If your app doesn't
+need AI chat, delete `lib/features/chat/` and remove its route from
+`router.dart`. Nothing else breaks.
 
 ### Module inventory
 
-| Module | Description | Delete if your app... |
-| --- | --- | --- |
-| `auth` | Email/password + Apple + Google sign-in, auth state, protected routes | Never — every app needs auth |
-| `onboarding` | 3-step configurable onboarding flow with progress indicator | Never — every app needs onboarding |
-| `paywall` | RevenueCat integration, free vs premium comparison, entitlement checks | Is completely free |
-| `settings` | Notification prefs, subscription management, about screen, sign out, delete account | Never — every app needs settings |
-| `chat` | AI streaming chat with message bubbles, typing indicator, persistence | Doesn't use AI chat |
-| `home` | Placeholder home screen with tab bar | Override, don't delete |
+| Module       | Description                                                                         | Delete if your app...              |
+| ------------ | ----------------------------------------------------------------------------------- | ---------------------------------- |
+| `auth`       | Email/password + Apple + Google sign-in, auth state, protected routes               | Never — every app needs auth       |
+| `onboarding` | 3-step configurable onboarding flow with progress indicator                         | Never — every app needs onboarding |
+| `paywall`    | RevenueCat integration, free vs premium comparison, entitlement checks              | Is completely free                 |
+| `settings`   | Notification prefs, subscription management, about screen, sign out, delete account | Never — every app needs settings   |
+| `chat`       | AI streaming chat with message bubbles, typing indicator, persistence               | Doesn't use AI chat                |
+| `home`       | Placeholder home screen with tab bar                                                | Override, don't delete             |
 
 ---
 
@@ -319,7 +328,10 @@ Each feature module is fully self-contained and deletable. If your app doesn't n
 
 ### Overview
 
-All development happens against a local Supabase instance running via Docker. This gives you a full Postgres database, Auth server, Edge Functions runtime, Storage, and Supabase Studio — all on your machine. No cloud account needed until you're ready to deploy.
+All development happens against a local Supabase instance running via Docker.
+This gives you a full Postgres database, Auth server, Edge Functions runtime,
+Storage, and Supabase Studio — all on your machine. No cloud account needed
+until you're ready to deploy.
 
 ### Prerequisites
 
@@ -359,11 +371,11 @@ supabase stop
 
 ### Local → Cloud migration path
 
-| Stage | Supabase URL | Anon Key | How to switch |
-| --- | --- | --- | --- |
-| **Local dev** | `http://127.0.0.1:54321` | From `supabase start` output | Default — no config needed |
-| **Staging** | `https://your-staging-project.supabase.co` | From Supabase dashboard | Set in `.env.staging` |
-| **Production** | `https://your-prod-project.supabase.co` | From Supabase dashboard | Set in `.env.production` |
+| Stage          | Supabase URL                               | Anon Key                     | How to switch              |
+| -------------- | ------------------------------------------ | ---------------------------- | -------------------------- |
+| **Local dev**  | `http://127.0.0.1:54321`                   | From `supabase start` output | Default — no config needed |
+| **Staging**    | `https://your-staging-project.supabase.co` | From Supabase dashboard      | Set in `.env.staging`      |
+| **Production** | `https://your-prod-project.supabase.co`    | From Supabase dashboard      | Set in `.env.production`   |
 
 When you're ready to go to production:
 
@@ -552,11 +564,20 @@ flutter build appbundle --dart-define-from-file=.env.production
 
 ### How it works
 
-1. **All writes go to Drift first.** User creates/updates/deletes data → DAO writes to SQLite immediately → UI updates instantly.
-2. **Writes are queued for sync.** Every local write also inserts a row into the `sync_queue` table with the table name, row ID, operation type (insert/update/delete), and payload.
-3. **SyncService processes the queue.** When connectivity changes from offline → online, or on a periodic timer (e.g. every 60 seconds while online), SyncService reads the queue and pushes changes to Supabase.
-4. **Conflict resolution.** Default strategy is last-write-wins using `updated_at` timestamps. Override `ConflictResolver` for app-specific merge logic.
-5. **Supabase → Local.** On app launch and periodically while online, SyncService pulls changes from Supabase that are newer than the last sync timestamp.
+1. **All writes go to Drift first.** User creates/updates/deletes data → DAO
+   writes to SQLite immediately → UI updates instantly.
+2. **Writes are queued for sync.** Every local write also inserts a row into the
+   `sync_queue` table with the table name, row ID, operation type
+   (insert/update/delete), and payload.
+3. **SyncService processes the queue.** When connectivity changes from offline →
+   online, or on a periodic timer (e.g. every 60 seconds while online),
+   SyncService reads the queue and pushes changes to Supabase.
+4. **Conflict resolution.** Default strategy is last-write-wins using
+   `updated_at` timestamps. Override `ConflictResolver` for app-specific merge
+   logic.
+5. **Supabase → Local.** On app launch and periodically while online,
+   SyncService pulls changes from Supabase that are newer than the last sync
+   timestamp.
 
 ### Drift database definition
 
@@ -623,13 +644,13 @@ class SyncService {
 
 ### Supported auth methods
 
-| Method | Implementation | Notes |
-| --- | --- | --- |
-| Email + password | `supabase.auth.signUp()` / `signInWithPassword()` | Default for all apps |
-| Sign in with Apple | `supabase.auth.signInWithApple()` via `sign_in_with_apple` | Required for iOS App Store if any social login present |
-| Sign in with Google | `supabase.auth.signInWithOAuth(OAuthProvider.google)` via `google_sign_in` | Optional |
-| Guest / anonymous | `supabase.auth.signInAnonymously()` | For apps that allow on-device-first usage before account creation |
-| Password reset | `supabase.auth.resetPasswordForEmail()` | Email link flow |
+| Method              | Implementation                                                             | Notes                                                             |
+| ------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Email + password    | `supabase.auth.signUp()` / `signInWithPassword()`                          | Default for all apps                                              |
+| Sign in with Apple  | `supabase.auth.signInWithApple()` via `sign_in_with_apple`                 | Required for iOS App Store if any social login present            |
+| Sign in with Google | `supabase.auth.signInWithOAuth(OAuthProvider.google)` via `google_sign_in` | Optional                                                          |
+| Guest / anonymous   | `supabase.auth.signInAnonymously()`                                        | For apps that allow on-device-first usage before account creation |
+| Password reset      | `supabase.auth.resetPasswordForEmail()`                                    | Email link flow                                                   |
 
 ### Auth state provider (Riverpod)
 
@@ -723,7 +744,9 @@ class PremiumGate extends ConsumerWidget {
 
 ### Paywall screen template
 
-The paywall screen shows a side-by-side comparison of Free vs Premium features, pricing, and a call-to-action. It uses RevenueCat's `Offerings` to dynamically fetch available packages (monthly, annual, lifetime).
+The paywall screen shows a side-by-side comparison of Free vs Premium features,
+pricing, and a call-to-action. It uses RevenueCat's `Offerings` to dynamically
+fetch available packages (monthly, annual, lifetime).
 
 ```
 ┌──────────────────────────────────┐
@@ -804,7 +827,10 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_ANON_KEY")!,
     { global: { headers: { Authorization: authHeader! } } },
   );
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
   if (error || !user) {
     return new Response("Unauthorized", { status: 401 });
   }
@@ -885,7 +911,8 @@ class ChatNotifier extends _$ChatNotifier {
 
 ### Color tokens
 
-Every app overrides `colors.dart` with its own palette. The starter provides a neutral dark theme as the default.
+Every app overrides `colors.dart` with its own palette. The starter provides a
+neutral dark theme as the default.
 
 ```dart
 abstract class AppColors {
@@ -1397,13 +1424,17 @@ create policy "Users can manage own sync metadata"
 
 ### ai-proxy/index.ts
 
-See [AI Chat Infrastructure](#11-ai-chat-infrastructure) for the full implementation.
+See [AI Chat Infrastructure](#11-ai-chat-infrastructure) for the full
+implementation.
 
-Supports both OpenAI and Anthropic backends. The client sends a `provider` field (`"openai"` or `"anthropic"`) and the Edge Function routes accordingly. AI API keys are stored as Supabase secrets, never exposed to the client.
+Supports both OpenAI and Anthropic backends. The client sends a `provider` field
+(`"openai"` or `"anthropic"`) and the Edge Function routes accordingly. AI API
+keys are stored as Supabase secrets, never exposed to the client.
 
 ### sync-handler/index.ts
 
-Accepts a batch of sync operations from the client and applies them to Supabase Postgres in a transaction.
+Accepts a batch of sync operations from the client and applies them to Supabase
+Postgres in a transaction.
 
 ```typescript
 // POST /functions/v1/sync-handler
@@ -1413,7 +1444,8 @@ Accepts a batch of sync operations from the client and applies them to Supabase 
 
 ### push-notification/index.ts
 
-Sends targeted push notifications via FCM. Called by Supabase database webhooks or cron jobs.
+Sends targeted push notifications via FCM. Called by Supabase database webhooks
+or cron jobs.
 
 ```typescript
 // POST /functions/v1/push-notification
@@ -1495,6 +1527,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 ### scripts/rename_package.sh
 
 Handles renaming:
+
 - `pubspec.yaml` name field
 - iOS bundle identifier (`ios/Runner.xcodeproj`)
 - Android applicationId (`android/app/build.gradle`)
@@ -1597,12 +1630,12 @@ test/
 
 ### What the starter kit tests
 
-| Layer | What to test | Tool |
-| --- | --- | --- |
-| Providers | Auth state transitions, sync logic, entitlement checks | `flutter_test` + `mocktail` |
-| DAOs | CRUD operations against in-memory Drift database | `drift` test utilities |
-| Widgets | Key UI states (loading, error, premium gate) | `flutter_test` widget tests |
-| Edge Functions | Request validation, auth checks, response format | Deno test runner |
+| Layer          | What to test                                           | Tool                        |
+| -------------- | ------------------------------------------------------ | --------------------------- |
+| Providers      | Auth state transitions, sync logic, entitlement checks | `flutter_test` + `mocktail` |
+| DAOs           | CRUD operations against in-memory Drift database       | `drift` test utilities      |
+| Widgets        | Key UI states (loading, error, premium gate)           | `flutter_test` widget tests |
+| Edge Functions | Request validation, auth checks, response format       | Deno test runner            |
 
 ### Running tests
 
@@ -1640,7 +1673,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.x'
+          flutter-version: "3.22.x"
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter analyze
@@ -1654,7 +1687,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.x'
+          flutter-version: "3.22.x"
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build appbundle --dart-define-from-file=.env.production
@@ -1667,32 +1700,38 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.x'
+          flutter-version: "3.22.x"
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
-      - run: flutter build ios --no-codesign --dart-define-from-file=.env.production
+      - run:
+          flutter build ios --no-codesign
+          --dart-define-from-file=.env.production
 ```
 
 ---
 
 ## 22. What Stays OUT
 
-This starter kit intentionally excludes anything app-specific. When you clone it for a new app, you add these yourself:
+This starter kit intentionally excludes anything app-specific. When you clone it
+for a new app, you add these yourself:
 
-| Category | Examples | Why it's excluded |
-| --- | --- | --- |
-| App-specific screens | Roleplay, grounding exercises, Bible memorization, task planner | Every app is different |
-| App-specific data models | Objections, exercises, devotionals, tasks, habits | Schema varies per app |
-| Content / seed data | Apologetics Q&A, scripture passages, exercise scripts | Unique to each app |
-| App-specific color palette | PocketApologist gold, GroundMe earth tones, FlowDay blue | Override `colors.dart` |
-| Custom animations | Breathing circle, streak fire, confetti | Build per app as needed |
-| Platform integrations | HealthKit, Calendar, Apple Watch, Widgets | Only some apps need these |
-| Complex AI prompts | Roleplay system prompts, feedback rubrics | Prompt engineering is per-app |
-| Marketing / ASO | App Store screenshots, descriptions, keywords | Created at launch time |
-| Third-party content APIs | Bible API, devotional feeds | Only relevant to specific apps |
+| Category                   | Examples                                                        | Why it's excluded              |
+| -------------------------- | --------------------------------------------------------------- | ------------------------------ |
+| App-specific screens       | Roleplay, grounding exercises, Bible memorization, task planner | Every app is different         |
+| App-specific data models   | Objections, exercises, devotionals, tasks, habits               | Schema varies per app          |
+| Content / seed data        | Apologetics Q&A, scripture passages, exercise scripts           | Unique to each app             |
+| App-specific color palette | PocketApologist gold, GroundMe earth tones, FlowDay blue        | Override `colors.dart`         |
+| Custom animations          | Breathing circle, streak fire, confetti                         | Build per app as needed        |
+| Platform integrations      | HealthKit, Calendar, Apple Watch, Widgets                       | Only some apps need these      |
+| Complex AI prompts         | Roleplay system prompts, feedback rubrics                       | Prompt engineering is per-app  |
+| Marketing / ASO            | App Store screenshots, descriptions, keywords                   | Created at launch time         |
+| Third-party content APIs   | Bible API, devotional feeds                                     | Only relevant to specific apps |
 
 ---
 
 ## Summary
 
-Clone → run `setup.sh` → override colors and tabs → start building features. Everything else — auth, paywall, local DB, Supabase sync, AI proxy, push notifications, analytics, error tracking, theming — is already wired and working.
+Clone → run `setup.sh` → override colors and tabs → start building features.
+Everything else — auth, paywall, local DB, Supabase sync, AI proxy, push
+notifications, analytics, error tracking, theming — is already wired and
+working.
