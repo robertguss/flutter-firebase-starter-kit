@@ -2,9 +2,15 @@ class AppConfig {
   static const String appName = 'Starter Kit';
   static const String bundleId = 'com.example.starterkit';
 
-  // RevenueCat
-  static const String revenueCatAppleApiKey = 'appl_YOUR_KEY';
-  static const String revenueCatGoogleApiKey = 'goog_YOUR_KEY';
+  // RevenueCat (set via --dart-define)
+  static const String revenueCatAppleApiKey = String.fromEnvironment(
+    'REVENUECAT_APPLE_KEY',
+    defaultValue: '',
+  );
+  static const String revenueCatGoogleApiKey = String.fromEnvironment(
+    'REVENUECAT_GOOGLE_KEY',
+    defaultValue: '',
+  );
 
   // Legal
   static const String privacyPolicyUrl = 'https://example.com/privacy';

@@ -1,9 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
-import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
-import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
 import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
+import 'package:flutter_starter_kit/shared/providers/delete_account_provider.dart';
 import 'package:flutter_starter_kit/shared/providers/sign_out_provider.dart';
 import 'package:flutter_starter_kit/features/settings/providers/theme_provider.dart';
 import 'package:flutter_starter_kit/features/settings/widgets/settings_section.dart';
@@ -11,11 +11,18 @@ import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  bool _isDeleting = false;
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final isPremium = ref.watch(isPremiumProvider);
 
@@ -67,10 +74,14 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                         );
                       }
-                    } catch (error) {
+                    } catch (_) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: $error')),
+                          const SnackBar(
+                            content: Text(
+                              'Something went wrong. Please try again.',
+                            ),
+                          ),
                         );
                       }
                     }
@@ -107,7 +118,14 @@ class SettingsScreen extends ConsumerWidget {
                   'Delete Account',
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
-                onTap: () => _showDeleteConfirmation(context, ref),
+                trailing: _isDeleting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : null,
+                onTap: _isDeleting ? null : () => _showDeleteConfirmation(context),
               ),
             ],
           ),
@@ -116,7 +134,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, WidgetRef ref) {
+  void _showDeleteConfirmation(BuildContext context) {
     showDialog<void>(
       context: context,
       builder:
@@ -134,20 +152,41 @@ class SettingsScreen extends ConsumerWidget {
                 style: FilledButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.error,
                 ),
-                onPressed: () async {
+                onPressed: () {
                   Navigator.pop(context);
-                  final user = ref.read(authStateProvider).valueOrNull;
-                  if (user != null) {
-                    await ref.read(userProfileServiceProvider).deleteProfile(user.uid);
-                    await ref.read(purchasesServiceProvider).logout();
-                    await ref.read(authServiceProvider).deleteAccount();
-                  }
-                  // Router's refreshListenable handles redirect to /auth
+                  _deleteAccount();
                 },
                 child: const Text('Delete'),
               ),
             ],
           ),
     );
+  }
+
+  Future<void> _deleteAccount() async {
+    setState(() => _isDeleting = true);
+    try {
+      await ref.read(deleteAccountProvider.future);
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        final message = switch (e.code) {
+          'requires-recent-login' => 'Please sign in again to continue.',
+          _ => 'Authentication error. Please try again.',
+        };
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Something went wrong. Please try again.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isDeleting = false);
+    }
   }
 }

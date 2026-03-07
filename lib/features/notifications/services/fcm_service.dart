@@ -14,10 +14,7 @@ class FcmService {
       debugPrint('FCM permission status: ${settings.authorizationStatus}');
     }
 
-    final token = await messaging.getToken();
-    if (token != null && EnvironmentConfig.current != Environment.prod) {
-      debugPrint('FCM Token: $token');
-    }
+    await messaging.getToken();
 
     messaging.onTokenRefresh.listen((_) {});
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);

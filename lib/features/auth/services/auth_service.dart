@@ -35,6 +35,34 @@ class AuthService {
     await firebaseAuth.signOut();
   }
 
+  Future<void> reauthenticate() async {
+    final user = firebaseAuth.currentUser;
+    if (user == null) return;
+
+    // Re-authenticate with the provider the user originally signed in with
+    final providerData = user.providerData;
+    if (providerData.isEmpty) return;
+
+    final providerId = providerData.first.providerId;
+    if (providerId == 'apple.com') {
+      await user.reauthenticateWithProvider(AppleAuthProvider());
+    } else if (providerId == 'google.com') {
+      final googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        throw FirebaseAuthException(
+          code: 'requires-recent-login',
+          message: 'Re-authentication was cancelled.',
+        );
+      }
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      await user.reauthenticateWithCredential(credential);
+    }
+  }
+
   Future<void> deleteAccount() async {
     final user = firebaseAuth.currentUser;
     if (user != null) {
