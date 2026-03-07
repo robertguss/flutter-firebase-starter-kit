@@ -4,6 +4,7 @@ import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
 import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
+import 'package:flutter_starter_kit/shared/providers/sign_out_provider.dart';
 import 'package:flutter_starter_kit/features/settings/providers/theme_provider.dart';
 import 'package:flutter_starter_kit/features/settings/widgets/settings_section.dart';
 import 'package:flutter_starter_kit/routing/routes.dart';
@@ -98,8 +99,7 @@ class SettingsScreen extends ConsumerWidget {
               ListTile(
                 title: const Text('Sign Out'),
                 onTap: () async {
-                  // Router's refreshListenable handles redirect to /auth
-                  await ref.read(authServiceProvider).signOut();
+                  await ref.read(signOutProvider.future);
                 },
               ),
               ListTile(
