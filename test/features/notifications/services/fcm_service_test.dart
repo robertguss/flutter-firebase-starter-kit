@@ -1,10 +1,13 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_starter_kit/features/auth/services/user_profile_service.dart';
 import 'package:flutter_starter_kit/features/notifications/services/fcm_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockFirebaseMessaging extends Mock implements FirebaseMessaging {}
+
+class MockUserProfileService extends Mock implements UserProfileService {}
 
 void main() {
   late MockFirebaseMessaging mockMessaging;
@@ -50,8 +53,6 @@ void main() {
       when(() => mockMessaging.requestPermission())
           .thenAnswer((_) async => _fakeSettings());
       when(() => mockMessaging.getToken()).thenAnswer((_) async => 'token');
-      when(() => mockMessaging.onTokenRefresh)
-          .thenAnswer((_) => const Stream.empty());
       when(() => mockMessaging.getInitialMessage())
           .thenAnswer((_) async => null);
 
@@ -64,8 +65,6 @@ void main() {
       when(() => mockMessaging.requestPermission())
           .thenAnswer((_) async => _fakeSettings());
       when(() => mockMessaging.getToken()).thenAnswer((_) async => 'token');
-      when(() => mockMessaging.onTokenRefresh)
-          .thenAnswer((_) => const Stream.empty());
       when(() => mockMessaging.getInitialMessage())
           .thenAnswer((_) async => null);
 
@@ -74,18 +73,27 @@ void main() {
       verify(() => mockMessaging.getToken()).called(1);
     });
 
-    test('initialize listens to token refresh', () async {
-      when(() => mockMessaging.requestPermission())
-          .thenAnswer((_) async => _fakeSettings());
-      when(() => mockMessaging.getToken()).thenAnswer((_) async => 'token');
+    test('startTokenRefreshListener listens to token refresh', () async {
+      final mockProfileService = MockUserProfileService();
       when(() => mockMessaging.onTokenRefresh)
           .thenAnswer((_) => const Stream.empty());
-      when(() => mockMessaging.getInitialMessage())
-          .thenAnswer((_) async => null);
 
-      await service.initialize();
+      service.startTokenRefreshListener('uid-1', mockProfileService);
 
       verify(() => mockMessaging.onTokenRefresh).called(1);
+    });
+
+    test('stopTokenRefreshListener cancels subscription', () async {
+      final mockProfileService = MockUserProfileService();
+      when(() => mockMessaging.onTokenRefresh)
+          .thenAnswer((_) => const Stream.empty());
+
+      service.startTokenRefreshListener('uid-1', mockProfileService);
+      service.stopTokenRefreshListener();
+
+      // Starting again should work without issues
+      service.startTokenRefreshListener('uid-1', mockProfileService);
+      verify(() => mockMessaging.onTokenRefresh).called(2);
     });
 
     test('initialize does not log FCM token to console', () async {
@@ -93,8 +101,6 @@ void main() {
           .thenAnswer((_) async => _fakeSettings());
       when(() => mockMessaging.getToken())
           .thenAnswer((_) async => 'secret-token-value');
-      when(() => mockMessaging.onTokenRefresh)
-          .thenAnswer((_) => const Stream.empty());
       when(() => mockMessaging.getInitialMessage())
           .thenAnswer((_) async => null);
 

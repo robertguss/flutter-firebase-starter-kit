@@ -12,9 +12,21 @@ class AppConfig {
     defaultValue: '',
   );
 
-  // Legal
+  // Legal — TODO: Replace with your app's legal URLs before publishing
   static const String privacyPolicyUrl = 'https://example.com/privacy';
   static const String termsOfServiceUrl = 'https://example.com/terms';
+
+  /// Call in debug mode to warn about placeholder URLs.
+  static void debugCheckPlaceholders() {
+    assert(
+      !privacyPolicyUrl.contains('example.com'),
+      'Replace placeholder privacy policy URL before publishing',
+    );
+    assert(
+      !termsOfServiceUrl.contains('example.com'),
+      'Replace placeholder terms of service URL before publishing',
+    );
+  }
 
   // Feature Flags
   static const bool enablePaywall = true;
