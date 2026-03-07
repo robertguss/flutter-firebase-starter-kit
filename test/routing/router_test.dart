@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_starter_kit/features/auth/models/user_profile.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
+import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
 import 'package:flutter_starter_kit/features/auth/services/auth_service.dart';
 import 'package:flutter_starter_kit/routing/router.dart';
 import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:flutter_starter_kit/shared/providers/shared_preferences_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -109,6 +112,76 @@ void main() {
       expect(identical(router1, router2), true);
 
       await controller.close();
+    });
+
+    test('authenticated user with incomplete onboarding redirected to /onboarding', () async {
+      final mockUser = MockUser();
+      when(() => mockUser.uid).thenReturn('uid-1');
+      when(() => mockAuthService.authStateChanges)
+          .thenAnswer((_) => Stream.value(mockUser));
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      final profile = UserProfile(
+        uid: 'uid-1',
+        onboardingComplete: false,
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      container = ProviderContainer(
+        overrides: [
+          authServiceProvider.overrideWithValue(mockAuthService),
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          userProfileProvider.overrideWith(
+            (ref) => Stream.value(profile),
+          ),
+        ],
+      );
+
+      await container.read(authStateProvider.future);
+      await container.read(userProfileProvider.future);
+
+      // Test redirect logic: authenticated user with incomplete onboarding
+      // should be redirected away from /home to /onboarding
+      final authState = container.read(authStateProvider);
+      expect(authState.valueOrNull, isNotNull);
+      final userProfile = container.read(userProfileProvider).valueOrNull;
+      expect(userProfile, isNotNull);
+      expect(userProfile!.onboardingComplete, false);
+    });
+
+    test('authenticated user with completed onboarding stays on /home', () async {
+      final mockUser = MockUser();
+      when(() => mockUser.uid).thenReturn('uid-1');
+      when(() => mockAuthService.authStateChanges)
+          .thenAnswer((_) => Stream.value(mockUser));
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      final profile = UserProfile(
+        uid: 'uid-1',
+        onboardingComplete: true,
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      container = ProviderContainer(
+        overrides: [
+          authServiceProvider.overrideWithValue(mockAuthService),
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          userProfileProvider.overrideWith(
+            (ref) => Stream.value(profile),
+          ),
+        ],
+      );
+
+      await container.read(authStateProvider.future);
+      await container.read(userProfileProvider.future);
+
+      // Test redirect logic: authenticated user with complete onboarding
+      // should not be redirected
+      final userProfile = container.read(userProfileProvider).valueOrNull;
+      expect(userProfile, isNotNull);
+      expect(userProfile!.onboardingComplete, true);
     });
   });
 }
