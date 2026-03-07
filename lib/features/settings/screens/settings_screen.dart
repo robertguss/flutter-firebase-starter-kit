@@ -98,10 +98,8 @@ class SettingsScreen extends ConsumerWidget {
               ListTile(
                 title: const Text('Sign Out'),
                 onTap: () async {
+                  // Router's refreshListenable handles redirect to /auth
                   await ref.read(authServiceProvider).signOut();
-                  if (context.mounted) {
-                    context.go(AppRoutes.auth);
-                  }
                 },
               ),
               ListTile(
@@ -144,9 +142,7 @@ class SettingsScreen extends ConsumerWidget {
                     await ref.read(purchasesServiceProvider).logout();
                     await ref.read(authServiceProvider).deleteAccount();
                   }
-                  if (context.mounted) {
-                    context.go(AppRoutes.auth);
-                  }
+                  // Router's refreshListenable handles redirect to /auth
                 },
                 child: const Text('Delete'),
               ),

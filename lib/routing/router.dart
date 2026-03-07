@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/screens/auth_screen.dart';
@@ -8,13 +9,24 @@ import 'package:flutter_starter_kit/features/settings/screens/settings_screen.da
 import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:go_router/go_router.dart';
 
+// Bridges Riverpod auth state to GoRouter's refreshListenable.
+// GoRouter re-evaluates redirect when notifyListeners() fires.
+class AuthChangeNotifier extends ChangeNotifier {
+  AuthChangeNotifier(Ref ref) {
+    ref.listen(authStateProvider, (_, __) => notifyListeners());
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final authNotifier = AuthChangeNotifier(ref);
+  ref.onDispose(() => authNotifier.dispose());
 
   return GoRouter(
     initialLocation: AppRoutes.home,
+    refreshListenable: authNotifier,
     redirect: (context, state) {
-      final user = authState.valueOrNull;
+      // Read cached value only — redirect must be synchronous
+      final user = ref.read(authStateProvider).valueOrNull;
       final isLoggedIn = user != null;
       final location = state.matchedLocation;
       final isOnAuthPage = location == AppRoutes.auth;
@@ -28,8 +40,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.home;
       }
 
-      // TODO: Add a cached onboardingComplete provider to redirect authenticated
-      // users into onboarding without making async Firestore reads here.
+      // TODO: Add cached onboardingComplete check from userProfileProvider
       if (isLoggedIn && isOnOnboardingPage) {
         return null;
       }
