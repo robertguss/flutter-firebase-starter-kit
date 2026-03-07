@@ -10,7 +10,9 @@ service cloud.firestore {
         )
         && (request.resource.data.onboardingComplete is bool)
         && (request.resource.data.get('displayName', '') is string)
-        && (request.resource.data.get('fcmToken', '') is string);
+        && (request.resource.data.get('photoUrl', '') is string)
+        && (request.resource.data.get('fcmToken', '') is string)
+        && (request.resource.data.get('createdAt', request.time) is timestamp);
       }
 
       allow read: if request.auth != null && request.auth.uid == uid;
@@ -21,7 +23,8 @@ service cloud.firestore {
 
       allow update: if request.auth != null && request.auth.uid == uid
         && validFields()
-        && request.resource.data.createdAt == resource.data.createdAt;
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.email == request.auth.token.email;
 
       allow delete: if request.auth != null && request.auth.uid == uid;
     }

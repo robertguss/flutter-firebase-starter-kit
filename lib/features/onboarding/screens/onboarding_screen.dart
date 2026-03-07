@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
-import 'package:flutter_starter_kit/features/auth/services/user_profile_service.dart';
+import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
 import 'package:flutter_starter_kit/features/onboarding/providers/onboarding_provider.dart';
 import 'package:flutter_starter_kit/features/onboarding/widgets/onboarding_page.dart';
 import 'package:flutter_starter_kit/features/onboarding/widgets/progress_dots.dart';
@@ -56,7 +56,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Future<void> _completeOnboarding() async {
     final user = ref.read(authStateProvider).valueOrNull;
     if (user != null) {
-      await UserProfileService().markOnboardingComplete(user.uid);
+      await ref.read(userProfileServiceProvider).markOnboardingComplete(user.uid);
     }
     if (AppConfig.enableAnalytics) {
       FirebaseAnalytics.instance.logEvent(name: 'onboarding_complete');

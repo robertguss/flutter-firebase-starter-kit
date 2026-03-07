@@ -38,7 +38,7 @@ class FcmService {
 
   void _handleMessageTap(RemoteMessage message) {
     if (EnvironmentConfig.current != Environment.prod) {
-      debugPrint('Message tap: ${message.data}');
+      debugPrint('Message tap: ${message.data.keys}');
     }
   }
 }

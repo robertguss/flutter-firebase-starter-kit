@@ -186,6 +186,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _deleteAccount() async {
     setState(() => _isDeleting = true);
+    // Invalidate to clear any cached error from a previous attempt
+    ref.invalidate(deleteAccountProvider);
     try {
       await ref.read(deleteAccountProvider.future);
     } on FirebaseAuthException catch (e) {

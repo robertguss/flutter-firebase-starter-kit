@@ -35,9 +35,6 @@ flutter test test/features/auth/providers/auth_provider_test.dart
 
 # Analyze code (uses flutter_lints + custom_lint with riverpod_lint)
 flutter analyze
-
-# Code generation (for riverpod_generator if used)
-dart run build_runner build --delete-conflicting-outputs
 ```
 
 ## Architecture
@@ -77,7 +74,7 @@ lib/
   state is a `StreamProvider<User?>` wrapping `FirebaseAuth.authStateChanges`.
 - **Navigation**: GoRouter with a global `redirect` that gates all routes behind
   auth. Unauthenticated users go to `/auth`, authenticated users on `/auth`
-  redirect to `/home`. `ShellRoute` wraps the home tab scaffold.
+  redirect to `/home`. `StatefulShellRoute` wraps the home tab scaffold.
 - **Feature Flags**: `AppConfig.enablePaywall` and
   `AppConfig.enableNotifications` control whether RevenueCat and FCM initialize
   in `main()`.
@@ -107,8 +104,9 @@ services, and routing.
 - **Auth**: `google_sign_in`, `sign_in_with_apple`
 - **Payments**: `purchases_flutter` (RevenueCat)
 - **Storage**: `shared_preferences`
-- **UI**: `flutter_animate`, `url_launcher`
-- **Dev**: `mockito`, `mocktail`, `fake_cloud_firestore`, `riverpod_lint`
+- **Observability**: `firebase_crashlytics`, `firebase_analytics`
+- **UI**: `url_launcher`, `package_info_plus`
+- **Dev**: `mocktail`, `fake_cloud_firestore`, `riverpod_lint`
 
 ### Package Name
 
