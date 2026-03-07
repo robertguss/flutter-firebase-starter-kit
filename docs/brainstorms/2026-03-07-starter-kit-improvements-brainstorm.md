@@ -1,174 +1,338 @@
-# Brainstorm: Flutter Firebase Starter Kit Improvements
+# Brainstorm: Flutter Firebase Starter Kit - Comprehensive Improvement Plan
 
-**Date:** 2026-03-07 **Status:** Draft **Goal:** Elevate the starter kit from
-"good template" to "production-ready, educational, open-source starter kit"
+**Date:** 2026-03-07 **Status:** Active **Audience:** Robert (primary user,
+building apps on this kit) **Approach:** Phased releases
 
 ---
 
 ## What We're Building
 
-A systematic improvement plan across four dimensions: architecture, security,
-testing, and UX/features. The starter kit serves three audiences: personal rapid
-development, open-source community use, and educational reference.
+A comprehensive upgrade to the Flutter Firebase Starter Kit across four
+dimensions: architectural integrity, developer experience, test quality, and new
+capabilities. The goal is to make this the foundation Robert reaches for every
+time he starts a new app -- fast to configure, confident to build on, and honest
+about what it provides.
 
 ---
 
-## Why This Matters
+## Why This Approach
 
-The current kit has a solid foundation -- feature-folder structure, Riverpod
-state management, GoRouter navigation, and Firebase backend. However,
-inconsistencies in service patterns, missing security defaults, thin test
-coverage, and incomplete UI patterns would trip up users who clone this
-expecting production readiness.
+Robert is building for himself first. That means:
+
+- **Correctness over marketing** -- fix what's broken before adding polish
+- **Confidence over coverage** -- test the flows that matter, not vanity metrics
+- **Real behavior over scaffolding** -- environment config should DO something,
+  not just exist
+- **Speed to first feature** -- every minute spent configuring is a minute not
+  building
+
+Phased releases let us ship value incrementally while keeping the kit stable
+enough to build on.
 
 ---
 
 ## Key Decisions
 
-### 1. Navigation: Two working tabs (Home + Profile)
-
-- Demonstrates the `StatefulShellRoute` pattern properly
-- Profile tab pulls from Firestore user data, showing a real data flow
-- Avoids the current misleading 3-tab setup where only 1 works
-
-### 2. Paywall: Client-side but correct
-
-- Hydrate premium state from RevenueCat `CustomerInfo` on app start
-- Replace the simple `StateProvider<bool>` with a derived provider reading from
-  `customerInfoProvider`
-- Document the server-side webhook approach as an upgrade path
-- Rationale: RevenueCat SDK already verifies with Apple/Google servers;
-  server-side adds infrastructure complexity inappropriate for a starter kit
-
-### 3. Observability: Add both Crashlytics and Analytics
-
-- Wire `FlutterError.onError` and `PlatformDispatcher.instance.onError` to
-  Crashlytics
-- Add Firebase Analytics with a few example events (sign_in, purchase,
-  onboarding_complete)
-- Feature-flag gated like notifications and paywall
-
-### 4. Data models: Manual Dart classes with fromMap/toMap
-
-- Create a `UserProfile` model with type-safe fields
-- No code generation (freezed/json_serializable) -- keeps the kit simple and
-  educational
-- Remove unused `build_runner` and `riverpod_generator` dependencies
-
-### 5. Error handling: Full global handler + error UI
-
-- `runZonedGuarded` wrapping the entire app
-- `FlutterError.onError` for widget errors
-- `PlatformDispatcher.instance.onError` for platform errors
-- Custom error screen widget for graceful degradation
-- All wired to Crashlytics in non-debug builds
+| Decision              | Choice                           | Rationale                                                            |
+| --------------------- | -------------------------------- | -------------------------------------------------------------------- |
+| Primary audience      | Robert himself                   | Scratch your own itch; community benefits second                     |
+| Monetization          | RevenueCat stays, fully polished | Core to Robert's app strategy                                        |
+| Release strategy      | Phased (4 releases)              | Ship value incrementally, stay buildable                             |
+| Environment config    | Make it functional               | Infrastructure without behavior is worse than no infrastructure      |
+| Shared/auth violation | Fix it                           | Starter kits teach by example; violations propagate                  |
+| Riverpod              | Adopt @riverpod codegen          | Better ergonomics, auto-dispose by default, cleaner family providers |
+| State restoration     | Document only                    | Firebase handles auth/data persistence; document when to add it      |
+| Flutter flavors       | Full setup                       | Proper Android productFlavors + iOS schemes for dev/staging/prod     |
+| Internationalization  | Include l10n scaffolding         | Painful to retrofit; set up with English, strings in .arb files      |
+| Profile depth         | Full profile page                | Avatar, name, email, preferences, notifications, account actions     |
 
 ---
 
-## Improvement Roadmap
+## Phase 1: Foundation Integrity (v1.1)
 
-### Phase 1: Architecture Fixes (Foundation)
+_Fix what's broken or misleading. After this phase, the kit is honest and
+architecturally sound._
 
-These fix correctness issues that affect every user of the kit.
+### 1.1 Fix shared/ importing from features/auth/
 
-| #   | Issue                                                                         | Fix                                                                                                                            | Priority |
-| --- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------- |
-| A1  | Router recreates GoRouter on auth changes, resetting nav stack                | Use `refreshListenable` with a `ChangeNotifier` bridge instead of rebuilding                                                   | Critical |
-| A2  | Inconsistent service instantiation (some providers, some direct, some static) | Create Riverpod providers for all services; convert `PurchasesService` from static to instance methods; inject via constructor | Critical |
-| A3  | Bottom nav is non-functional (3 tabs, only 1 works)                           | Implement `StatefulShellRoute` with Home + Profile tabs                                                                        | High     |
-| A4  | Theme provider race condition (light flash on startup)                        | Initialize SharedPreferences in `main()`, pass to provider; or use `AsyncNotifierProvider`                                     | High     |
-| A5  | Premium state not restored on cold start                                      | Derive `isPremiumProvider` from `customerInfoProvider` instead of manual `StateProvider<bool>`                                 | High     |
-| A6  | No UserProfile data model (raw maps everywhere)                               | Create `UserProfile` class with `fromMap`/`toMap`, add `userProfileProvider`                                                   | High     |
-| A7  | `FcmService` crosses feature boundaries (writes to users collection)          | Delegate token storage to `UserProfileService` or inject Firestore via constructor                                             | Medium   |
-| A8  | `EnvironmentConfig` is initialized but never used                             | Wire it into Firebase config selection, log levels, and API endpoints                                                          | Medium   |
-| A9  | `SocialLoginButtons` uses `dart:io` Platform (breaks web)                     | Use `defaultTargetPlatform` instead                                                                                            | Low      |
+Three shared providers (`sign_out_provider`, `delete_account_provider`,
+`post_auth_bootstrap_provider`) import from `features/auth/`. This contradicts
+the stated rule that shared/ never imports from features/.
 
-### Phase 2: Security Hardening
+**Recommendation:** Move them into `features/auth/providers/` since they're
+fundamentally auth operations. Update imports accordingly.
 
-These prevent real vulnerabilities for anyone deploying apps from this kit.
+### 1.2 Migrate to Riverpod codegen
 
-| #   | Issue                                                                       | Fix                                                                                         | Priority |
-| --- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------- |
-| S1  | No Firestore security rules                                                 | Add `firestore.rules` -- users can only read/write own `/users/{uid}` doc, field validation | Critical |
-| S2  | Account deletion order is unsafe (data deleted before auth, which can fail) | Re-authenticate first, delete auth account, then clean up Firestore                         | Critical |
-| S3  | RevenueCat API keys designed to be hardcoded                                | Move to `--dart-define` or `.env` file (gitignored), document clearly                       | High     |
-| S4  | `.gitignore` missing Firebase config exclusions                             | Add `google-services.json`, `GoogleService-Info.plist`, `firebase_options.dart`, `.env`     | High     |
-| S5  | Raw error messages shown to users (`error.toString()`)                      | Map known exceptions to user-friendly messages; log full errors internally                  | Medium   |
-| S6  | Sign-out doesn't clear RevenueCat session                                   | Call `PurchasesService.logout()` during sign-out                                            | Medium   |
-| S7  | RevenueCat debug logging enabled unconditionally                            | Conditional log level based on `EnvironmentConfig.current`                                  | Medium   |
-| S8  | FCM token printed to console                                                | Remove or use structured logger                                                             | Low      |
+- Add `riverpod_generator`, `build_runner`, and `riverpod_annotation` (already
+  in pubspec) to dev_dependencies
+- Migrate all ~15 existing providers to `@riverpod` /
+  `@Riverpod(keepAlive: true)` annotations
+- Generate `.g.dart` files, update all imports
+- Add `build_runner` commands to Makefile and CLAUDE.md
+- Remove any truly unused deps after migration audit
 
-### Phase 3: Testing Foundation
+### 1.3 Clean up dead artifacts
 
-These ensure the kit demonstrates proper testing patterns.
+- Archive or remove `todos/` directory (25 items all marked complete --
+  confusing for new developers)
+- Remove agent-generated analysis files from project root if present
 
-| #   | Issue                                        | Fix                                                                                        | Priority |
-| --- | -------------------------------------------- | ------------------------------------------------------------------------------------------ | -------- |
-| T1  | Router redirect logic completely untested    | Add tests: unauth -> /auth redirect, auth on /auth -> /home redirect                       | Critical |
-| T2  | Zero exception/error tests in entire suite   | Add error path tests for sign-in cancellation, Firestore failures, delete account failures | High     |
-| T3  | Zero widget tests for any screen             | Add widget tests for AuthScreen, HomeScreen, SettingsScreen                                | High     |
-| T4  | Notifications feature has zero coverage      | Add FcmService tests (requires constructor injection fix from A2)                          | Medium   |
-| T5  | PurchasesService untestable (static methods) | Convert to instance methods, add tests (depends on A2)                                     | Medium   |
-| T6  | Shared widgets untested                      | Add tests for `PremiumGate` and `LoadingState`                                             | Medium   |
-| T7  | `mockito` in dev deps but never used         | Remove it                                                                                  | Low      |
+### 1.4 Security fixes
 
-### Phase 4: UX & Feature Polish
+- Add `android:allowBackup="false"` to AndroidManifest.xml (prevents ADB data
+  extraction)
+- Add `flutter_secure_storage` as a dependency with usage guidance (when to use
+  vs SharedPreferences)
+- Replace placeholder `example.com` legal URLs with a clear `TODO` marker that
+  fails loudly
+- Make FCM `onTokenRefresh` actually update the server-side token (currently a
+  no-op)
+- Add string length limits to Firestore security rules (DoS prevention)
 
-These make the kit feel production-ready and demonstrate best practices.
+### 1.5 ThemeMode system default
 
-| #   | Issue                                                         | Fix                                                                                    | Priority |
-| --- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------- |
-| U1  | No global error handling                                      | Add `runZonedGuarded` + error handlers + custom error screen, wire to Crashlytics      | Critical |
-| U2  | Add Firebase Crashlytics                                      | Integrate crashlytics package, wire to global error handler                            | High     |
-| U3  | Add Firebase Analytics                                        | Add analytics package, example events for key flows                                    | High     |
-| U4  | `flutter_animate` imported but never used                     | Either use it (add entrance animations to onboarding, screen transitions) or remove it | Medium   |
-| U5  | No empty states or skeleton loading                           | Add reusable `EmptyState` and `SkeletonLoader` shared widgets                          | Medium   |
-| U6  | Missing accessibility: semantic labels, color-only indicators | Add `semanticLabel` to icons, add text labels alongside color indicators               | Medium   |
-| U7  | Settings missing app version, feedback link                   | Add version display and feedback/support mechanism                                     | Low      |
-| U8  | No offline connectivity indicator                             | Add `connectivity_plus` with a provider and banner widget                              | Low      |
-| U9  | Onboarding has placeholder content only                       | Add example content with images/illustrations                                          | Low      |
+- Add system-default option to theme toggle (currently only light/dark stored as
+  boolean)
+- Store as string enum instead of boolean for extensibility
 
-### Cleanup Tasks
+### 1.6 Environment config that works
 
-| #   | Task                                                                     |
-| --- | ------------------------------------------------------------------------ |
-| C1  | Remove unused `mockito` dev dependency                                   |
-| C2  | Remove unused `flutter_animate` (or use it)                              |
-| C3  | Remove unused `build_runner` and `riverpod_generator` (or use them)      |
-| C4  | Fix `app_test.dart` naming (it's a unit test, not widget test)           |
-| C5  | Standardize test patterns (`group()` nesting, consistent setUp/tearDown) |
+Make the `dev/staging/prod` enum actually control behavior:
+
+- Different log levels per environment
+- Crashlytics enabled only in prod
+- Debug banner in dev mode (Flutter's built-in `debugShowCheckedModeBanner`)
+- Foundation for per-environment Firebase projects (documented pattern)
 
 ---
 
-## Approach: Phased Implementation
+## Phase 2: Developer Experience (v1.2)
 
-**Phase 1 first** because architecture fixes unblock everything else -- you
-can't write proper tests (Phase 3) until services are properly injectable (A2),
-and security fixes (Phase 2) depend on correct service patterns.
+_Make the daily workflow faster and the onboarding honest._
 
-**Suggested order within phases:**
+### 2.1 Setup automation
 
-1. A1 (router) + A2 (service standardization) -- these are the foundation
-2. A6 (UserProfile model) + A4 (theme fix) -- quick wins with high impact
-3. S1 (Firestore rules) + S2 (account deletion) + S4 (.gitignore) -- security
-   essentials
-4. U1 (global error handling) + U2 (Crashlytics) -- observability
-5. T1-T3 (critical tests) -- validate everything works
-6. Remaining items by priority
+Create a `Makefile` or `scripts/setup.sh` that:
+
+- Checks Flutter SDK version
+- Runs `flutter pub get`
+- Checks for `firebase_options.dart` and guides through setup if missing
+- Runs `flutter analyze` to verify clean state
+- Prints a summary of next steps
+
+### 2.2 Honest the "3 files" promise
+
+Update README to accurately describe setup:
+
+- 3 config files for app customization
+- Plus Firebase setup (firebase_options.dart generation)
+- Plus platform config (bundle IDs)
+- Frame as: "3 files to customize + standard Firebase/platform setup"
+
+### 2.3 Feature surgery guides
+
+Create `docs/guides/removing-features.md` with per-feature checklists:
+
+- **Removing Paywall:** files to delete, imports to remove from
+  main.dart/router.dart, deps to drop, feature flag to disable
+- **Removing Notifications:** same structure
+- **Removing Onboarding:** same structure
+
+This is the kit's killer differentiator -- prove the "independently deletable"
+claim.
+
+### 2.4 CLAUDE.md improvements
+
+- Reference `docs/` directory so AI tools discover detailed guides
+- Add feature-removal instructions
+- Document the architectural rules explicitly
+
+### 2.5 Flutter flavors setup
+
+Configure proper per-environment builds:
+
+- Android: `productFlavors` for dev, staging, prod (different applicationId per
+  flavor)
+- iOS: Xcode schemes + configurations for dev, staging, prod (different bundle
+  ID per scheme)
+- Per-flavor Firebase config (google-services.json / GoogleService-Info.plist
+  per flavor)
+- Per-flavor app name and icon (optional but documented)
+- Update environment.dart to read from flavor instead of --dart-define
+
+### 2.6 l10n scaffolding
+
+- Enable Flutter's built-in l10n in pubspec.yaml (`generate: true`)
+- Create `lib/l10n/` with `app_en.arb` containing all user-facing strings
+- Move hardcoded strings from widgets to .arb file references
+- Document how to add a new locale
+- Single locale (English) to start -- pattern is what matters
+
+### 2.7 CI/CD with GitHub Actions
+
+Create `.github/workflows/`:
+
+- `ci.yml`: flutter analyze + flutter test on PR
+- `build.yml`: build APK/IPA on tag (manual trigger)
+- Keep simple and extensible
+
+### 2.8 Visual identity
+
+- Add 2-3 screenshots of key screens to README
+- Optional: GIF of auth -> onboarding -> home flow
+
+---
+
+## Phase 3: Test Quality (v1.3)
+
+_Build confidence in the foundation. Fix anti-patterns, close critical gaps._
+
+### 3.1 Delete or rewrite zero-value tests
+
+- `purchases_service_test.dart`: Tests mocktail itself, not your code. Zero
+  value. Delete or rewrite with real logic testing.
+- `app_test.dart`: Misleadingly named, duplicates auth_provider_test. Delete or
+  rename.
+
+### 3.2 Fix router redirect tests
+
+- `router_test.dart` lines 116-184: Actually invoke the redirect function and
+  assert the resulting location, not just provider state.
+
+### 3.3 Create shared test helpers
+
+Create `test/helpers/`:
+
+- `mocks.dart` -- shared mock declarations (eliminate ~40 lines of duplication
+  across 8+ files)
+- `pump_app.dart` -- helper wrapping ProviderScope + MaterialApp with common
+  overrides
+- `fixtures.dart` -- factory methods for UserProfile and other test data
+
+### 3.4 Close critical coverage gaps
+
+Priority tests to add:
+
+- **Sign-in flows** in auth_service_test.dart (Google + Apple -- primary entry
+  points untested)
+- **Onboarding screen** widget test (page swiping, completion)
+- **Notification provider** (FCM service tested but provider wiring isn't)
+- **Environment config** (parsing logic)
+
+### 3.5 Fix purchases_provider_test anti-pattern
+
+Stop re-implementing provider logic in test overrides. Test the actual
+`isPremiumProvider` with proper dependency mocks.
+
+### 3.6 Integration test foundation
+
+Create `integration_test/` with at least one end-to-end flow:
+
+- Auth -> Onboarding -> Home with mocked Firebase services
+- Establishes the pattern for future integration tests
+
+---
+
+## Phase 4: New Capabilities (v1.4)
+
+_Add features that teach real patterns and that Robert will actually use._
+
+### 4.1a Profile CRUD (core)
+
+- Avatar upload to Firebase Storage with image picker
+- Display name editing with inline save
+- Email display (read-only, from auth)
+- Profile completion indicator
+- Real example of Firestore CRUD + Storage + reactive UI
+
+### 4.1b Account actions migration
+
+- Move sign out and delete account from Settings to Profile
+- Decide what remains in Settings (theme toggle, app version, legal links,
+  feedback)
+- Clean separation: Profile = your data, Settings = app behavior
+
+### 4.1c Profile preferences
+
+- Notification toggle (ties into FCM)
+- Theme selection (ties into existing theme provider)
+- Stored in Firestore user doc, synced across devices
+
+### 4.2 Analytics event taxonomy
+
+Design a structured event system:
+
+- Standard events: `screen_view`, `feature_used`, `error_occurred`,
+  `purchase_started`
+- Analytics helper enforcing consistent parameter naming
+- Example implementation in 2-3 screens
+
+### 4.3 Consent gate for analytics/crashlytics
+
+- GDPR/CCPA consent prompt on first launch
+- Store consent in SharedPreferences (or secure storage)
+- Gate Crashlytics and Analytics initialization on consent
+- Increasingly legally required
+
+### 4.4 Offline-first documentation
+
+Document Firestore's built-in offline support (not custom implementation):
+
+- What Firestore handles automatically (local cache, offline reads/writes)
+- How to enable/configure persistence
+- When you need to add explicit offline handling (connectivity indicators, retry
+  UI)
+- Add `docs/guides/offline-support.md`
+
+### 4.5 Deep link documentation
+
+- Add `docs/guides/deep-links.md` explaining setup for iOS (Associated Domains)
+  and Android (App Links)
+- Cover use cases: sharing, transactional emails, push notification routing
+- GoRouter integration pattern
+- No code scaffolding -- too app-specific
+
+### 4.6 Firestore rules testing
+
+- Firebase emulator setup
+- Rules test file
+- Inline comments explaining each rule constraint
+
+### 4.7 State restoration documentation
+
+- Add `docs/guides/state-restoration.md`
+- Explain when to add RestorationMixin (complex multi-step forms)
+- Explain what Firebase already handles (auth session, Firestore data)
+- Code example for a form screen with state restoration
+
+---
+
+## Open Questions
+
+_All questions resolved._
 
 ---
 
 ## Resolved Questions
 
-- **Navigation approach:** Two tabs (Home + Profile) using StatefulShellRoute
-- **Paywall verification:** Client-side with proper CustomerInfo hydration
-- **Observability:** Both Crashlytics and Analytics, feature-flagged
-- **Data models:** Manual Dart classes, no code generation
-- **Error handling:** Full global handler with custom error UI screen
-- **Target audience:** All three (personal, open source, educational)
-- **Documentation:** Both inline code comments (explaining "why") and a separate
-  docs/ guide (architecture + setup)
-- **CI/CD:** No GitHub Actions workflow -- keep the repo focused on Flutter
-  code, users add their own CI
-- **Onboarding:** Generic example content (e.g., "Welcome to AppName", "Track
-  your goals") that demonstrates the pattern while being easy to replace
+| Question             | Decision                 | Rationale                                                        |
+| -------------------- | ------------------------ | ---------------------------------------------------------------- |
+| Target audience      | Robert first             | Scratch your own itch philosophy                                 |
+| Keep paywall?        | Yes, polish it           | Core monetization strategy                                       |
+| Release strategy     | 4 phased releases        | Ship value incrementally                                         |
+| CI/CD                | Include GitHub Actions   | Table stakes for 2026                                            |
+| Riverpod approach    | Adopt @riverpod codegen  | Better ergonomics, auto-dispose, cleaner family providers        |
+| State restoration    | Document only            | Firebase handles auth/data persistence automatically             |
+| Flutter flavors      | Full setup               | Proper productFlavors + Xcode schemes for dev/staging/prod       |
+| Internationalization | Include l10n scaffolding | Painful to retrofit; start with English in .arb files            |
+| Profile depth        | Full profile page        | Avatar, name, email, preferences, notifications, account actions |
+
+---
+
+## What's NOT in Scope
+
+- Rewriting to a different state management solution (Riverpod is the choice)
+- Adding a backend beyond Firebase
+- Web/desktop support (mobile focus: iOS + Android)
+- Multi-language docs (English only)

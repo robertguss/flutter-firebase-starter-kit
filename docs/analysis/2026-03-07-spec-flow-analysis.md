@@ -1,479 +1,191 @@
-# Spec Flow Analysis: Flutter Firebase Starter Kit Improvements
+# Spec Flow Analysis: 4-Phase Improvement Plan
 
-**Date:** 2026-03-07 **Analyzed by:** spec-flow-analyzer **Source:**
-docs/brainstorms/2026-03-07-starter-kit-improvements-brainstorm.md
+Generated: 2026-03-07
+
+## Phase 1: Riverpod Codegen Migration
+
+### Critical Ordering Dependency
+The shared/auth violation fix (1.1) MUST complete before codegen migration (1.2). Moving `sign_out_provider`, `delete_account_provider`, and `post_auth_bootstrap_provider` into `features/auth/providers/` changes file paths. If codegen runs first, generated `.g.dart` files will reference old paths and need regeneration.
+
+### Provider Dependency Chain at Risk
+The following chain must be preserved during migration:
+```
+authStateProvider (StreamProvider<User?>)
+  -> userProfileProvider (StreamProvider<UserProfile?>) watches authStateProvider
+  -> deleteAccountProvider (FutureProvider<void>) reads authStateProvider, authServiceProvider, userProfileServiceProvider
+  -> signOutProvider reads authServiceProvider, userProfileServiceProvider
+  -> postAuthBootstrapProvider reads authStateProvider, userProfileProvider
+```
+
+### Codegen Breaking Changes
+1. **`overrideWithValue` not supported on generated providers.** Tests currently use `authServiceProvider.overrideWithValue(mockAuthService)` in at least 4 test files (sign_out_test.dart, settings_screen_test.dart, others). After codegen, these must change to `authServiceProvider.overrideWith((ref) => mockAuthService)`.
+
+2. **`NotifierProvider` syntax changes.** `ThemeModeNotifier` extends `Notifier<ThemeMode>` with manual `NotifierProvider` construction. Under codegen, it becomes `@riverpod class ThemeModeNotifier` and the generated provider name changes from `themeModeProvider` to `themeModeNotifierProvider` unless explicitly annotated. Every `ref.watch(themeModeProvider)` call breaks.
+
+3. **`keepAlive` semantics.** `packageInfoProvider` uses `ref.keepAlive()` inside the provider body. Under codegen, this becomes `@Riverpod(keepAlive: true)` on the annotation. If missed, the provider becomes autoDispose and will re-fetch `PackageInfo.fromPlatform()` on every screen rebuild.
+
+4. **`isPremiumProvider` is overridden in main.dart** with complex conditional logic based on `AppConfig.enablePaywall`. Generated providers may not support the same override pattern. This provider needs special handling -- potentially remaining manual or using a dedicated abstract class.
+
+5. **Provider names with "Provider" suffix.** Codegen auto-appends "Provider" to function names. A function named `authState` generates `authStateProvider`. If the migration names functions `authStateProvider`, the generated name becomes `authStateProviderProvider`. Every provider function must be renamed to drop the "Provider" suffix.
+
+### Missing from Spec
+- No rollback plan if codegen migration partially fails
+- No mention of adding `part` directives to each provider file
+- No mention of running `dart run build_runner build --delete-conflicting-outputs` and verifying output
+- No guidance on whether to migrate all providers in one PR or incrementally
 
 ---
 
-## User Flow Overview
+## Phase 1: Shared/Auth Violation Fix
 
-### Flow 1: Cold Start (First Launch)
+### Import Cascade
+Moving 3 providers creates a 12+ file import update. Files affected:
+- `lib/features/settings/screens/settings_screen.dart` (imports delete_account, sign_out, feature_hooks)
+- `lib/features/paywall/widgets/premium_gate.dart` (imports premium_provider)
+- `lib/main.dart` (imports feature_hooks, premium_provider, shared_preferences_provider)
+- `lib/app.dart` (imports post_auth_bootstrap_provider)
+- All test files that override these providers (~6 test files)
 
-1. App launches -> `main()` initializes Firebase, RevenueCat, FCM
-2. Router checks auth state -> user is null -> redirect to `/auth`
-3. User signs in (Google or Apple)
-4. Auth state stream fires -> router redirect triggers
-5. **GAP: No onboarding redirect.** Router TODO comment says "Add a cached
-   onboardingComplete provider" but spec does not define when/how this check
-   happens after Phase 1 changes.
-6. User either sees Home or Onboarding (currently no automatic routing to
-   onboarding)
+### Circular Dependency Risk
+After moving `sign_out_provider` and `delete_account_provider` to `features/auth/providers/`, the Settings screen will import from `features/auth/`. This is architecturally valid (features CAN import from other features), but creates a coupling where deleting the auth feature breaks settings. The spec should clarify whether this is acceptable or if an abstraction layer (interface in shared/) is needed.
 
-### Flow 2: Cold Start (Returning User)
-
-1. App launches -> Firebase auto-restores auth session
-2. Router detects auth -> user goes to `/home`
-3. **GAP: Premium state not restored until spec fix A5 -- but spec does not
-   define what happens while `customerInfoProvider` is loading (FutureProvider
-   async gap).**
-
-### Flow 3: Sign-In
-
-1. User taps Google or Apple button
-2. OAuth flow launches
-3. Success -> UserCredential returned -> auth stream fires -> router redirects
-   to `/home`
-4. **GAP: No `createProfile` call after sign-in.**
-   `UserProfileService.createProfile` exists but is never called from auth flow.
-   The spec mentions A6 (UserProfile model) but does not specify when profile
-   creation occurs.
-
-### Flow 4: Sign-Out
-
-1. User taps "Sign Out" in Settings
-2. `authService.signOut()` called
-3. `context.go(AppRoutes.auth)` called manually
-4. **GAP (identified in spec as S6):** RevenueCat session not cleared. But spec
-   fix S6 does not specify whether FCM token should also be invalidated/removed
-   from Firestore on sign-out.
-
-### Flow 5: Account Deletion
-
-1. User taps "Delete Account" -> confirmation dialog
-2. Current order: delete Firestore profile -> RevenueCat logout -> delete
-   Firebase auth
-3. **GAP (identified in spec as S2):** No re-authentication step. But spec fix
-   says "re-authenticate first" without specifying the UI flow for
-   re-authentication (show password dialog? Re-trigger OAuth? What if re-auth
-   fails?)
-
-### Flow 6: Onboarding
-
-1. User navigates to `/onboarding` (currently manually, no auto-redirect)
-2. 3-page PageView with Skip and Next buttons
-3. On completion, `markOnboardingComplete` writes to Firestore
-4. Redirect to `/home`
-5. **GAP: No mechanism to route new users to onboarding automatically.** The
-   router has a TODO but no spec item addresses this.
-
-### Flow 7: Purchase / Paywall
-
-1. User hits PremiumGate or navigates to `/paywall`
-2. Offerings loaded from RevenueCat
-3. User purchases -> CustomerInfo returned
-4. `isPremiumProvider` manually set to true
-5. **GAP: No RevenueCat `login(uid)` call anywhere in the codebase.**
-   `PurchasesService.login()` exists but is never called, meaning purchases are
-   anonymous and cannot be restored across devices.
-
-### Flow 8: Push Notifications
-
-1. FCM initialized in `main()` (before auth)
-2. Permission requested immediately
-3. Token saved (currently just printed)
-4. **GAP: `saveTokenForUser(uid)` exists but is never called from any flow.**
-   Token is obtained before auth, but saving requires a uid.
-
-### Flow 9: Theme Toggle
-
-1. User toggles dark mode in Settings
-2. SharedPreferences updated
-3. **GAP (identified as A4):** `ThemeModeNotifier.build()` returns
-   `ThemeMode.light` synchronously, then async loads preference. This causes a
-   visible flash.
+### What Stays in shared/providers/?
+The spec says to move 3 providers but does not address:
+- `feature_hooks.dart` -- currently in shared/, imported by the 3 moved providers AND by main.dart. Does it stay or move?
+- `premium_provider.dart` -- in shared/ but overridden conditionally in main.dart. If it moves to features/paywall/, it contradicts the "features are independently deletable" principle since settings_screen.dart imports it.
+- `shared_preferences_provider.dart` -- stays, but should be documented as the one legitimate shared provider.
 
 ---
 
-## Flow Permutations Matrix
+## Phase 2: Flutter Flavors Setup
 
-| Scenario                      | Auth State    | Onboarding   | Premium     | Notification        | Current Behavior            | Expected After Fix          |
-| ----------------------------- | ------------- | ------------ | ----------- | ------------------- | --------------------------- | --------------------------- |
-| First launch, no account      | Unauth        | Not started  | N/A         | Not requested       | -> /auth                    | -> /auth                    |
-| First launch, sign in         | Auth (new)    | Not done     | Free        | Requested at launch | -> /home (skips onboarding) | -> /onboarding -> /home     |
-| Return user, free             | Auth          | Done         | Free        | Granted             | -> /home                    | -> /home                    |
-| Return user, premium          | Auth          | Done         | Premium     | Granted             | -> /home (premium lost)     | -> /home (premium restored) |
-| Return user, dark mode        | Auth          | Done         | Any         | Any                 | Flash of light mode         | No flash                    |
-| Sign out, sign back in        | Auth          | Already done | Was premium | Token stale         | -> /home (no premium)       | -> /home (premium restored) |
-| Delete account, re-register   | Auth (new)    | Reset        | Reset       | Token orphaned      | Crash risk (no re-auth)     | Clean flow                  |
-| App killed mid-purchase       | Auth          | Done         | Unknown     | N/A                 | isPremium = false           | Restored from CustomerInfo  |
-| Offline cold start            | Auth (cached) | Done         | Unknown     | N/A                 | Unspecified                 | Needs definition            |
-| Notification tap (app killed) | Varies        | Varies       | N/A         | Granted             | Prints to console           | Needs navigation            |
+### Breaking the Existing --dart-define Approach
+Current code in `environment.dart` uses `String.fromEnvironment('ENV', defaultValue: 'dev')`. The spec says "Update environment.dart to read from flavor instead of --dart-define." This is a breaking change for any existing CI/CD, developer workflows, or documentation. The spec does not specify:
+- Will `--dart-define=ENV=prod` still work as a fallback?
+- How does a flavor map to the Environment enum?
+- What happens on web/desktop where flavors don't exist? (Even if out of scope, the code should not crash.)
 
----
+### Firebase Config Per Flavor -- Missing Details
+Each flavor needs its own `google-services.json` (Android) and `GoogleService-Info.plist` (iOS). The spec mentions this but does not address:
+- Do 3 separate Firebase projects exist, or 3 apps within one project?
+- Where are the config files stored? (`android/app/src/dev/`, `android/app/src/staging/`, `android/app/src/prod/`?)
+- The current `FirebaseService.initialize()` uses `DefaultFirebaseOptions` from `firebase_options.dart`. How do per-flavor options get selected?
+- `flutterfire configure` generates a single `firebase_options.dart`. With flavors, you need per-flavor options or conditional logic.
 
-## Missing Elements and Gaps
-
-### Category: Auth Flow Completeness
-
-**Gap 1: No automatic profile creation after sign-in**
-
-- The `UserProfileService.createProfile()` method exists but is never called.
-- Impact: The Firestore `/users/{uid}` document is never created, so
-  `getProfile`, `markOnboardingComplete`, and `saveTokenForUser` all fail on new
-  users.
-- The spec mentions A6 (UserProfile model) but does not specify the trigger
-  point for profile creation.
-- Recommendation: Add profile creation (with check for existing) immediately
-  after successful sign-in, before router redirect.
-
-**Gap 2: No onboarding routing logic**
-
-- The router has a TODO comment but no spec item addresses automatic onboarding
-  redirect.
-- Impact: New users never see onboarding unless manually navigated there.
-- Recommendation: Add a spec item (suggest A10) to read `onboardingComplete`
-  from user profile and redirect accordingly. This depends on A6 (UserProfile
-  model) and Gap 1 (profile creation).
-
-**Gap 3: Re-authentication UI for account deletion (S2)**
-
-- The spec says "re-authenticate first" but does not define the user-facing
-  flow.
-- Questions: Does the user re-enter credentials? Re-trigger Google/Apple OAuth?
-  What error message appears if re-auth fails? Is there a timeout?
-- Impact: Implementation will stall without this definition.
-
-### Category: Payment / Premium State
-
-**Gap 4: RevenueCat `login(uid)` never called**
-
-- `PurchasesService.login()` exists but no code calls it.
-- Impact: All purchases are anonymous. Users cannot restore purchases on a new
-  device. The spec's A5 fix (derive isPremium from CustomerInfo) will not work
-  correctly without identifying the user to RevenueCat first.
-- Recommendation: Add `PurchasesService.login(uid)` call after successful auth
-  sign-in, and add this as a dependency for A5.
-
-**Gap 5: Premium state during async loading**
-
-- A5 replaces `StateProvider<bool>` with a derived provider from
-  `customerInfoProvider` (a `FutureProvider`).
-- The spec does not define what the UI shows while `customerInfoProvider` is
-  loading. `PremiumGate` currently reads a synchronous bool. If it reads a
-  `FutureProvider`, it needs loading/error states.
-- Impact: PremiumGate will show either "locked" or "loading" briefly on every
-  cold start, even for premium users. This is a degraded UX.
-- Recommendation: Specify that `PremiumGate` should show a shimmer/skeleton
-  while loading and handle the error state.
-
-**Gap 6: Restore purchases error handling**
-
-- Settings screen catches errors from `restorePurchases()` but shows
-  `'Error: $error'` (identified in S5).
-- The spec does not define specific error messages for: network failure, no
-  purchases found, RevenueCat rate limit, store unavailable.
-
-**Gap 7: Purchase flow error states**
-
-- The spec does not address: user cancels purchase mid-flow, purchase succeeds
-  but CustomerInfo fetch fails, duplicate purchase attempts, or subscription
-  already active.
-
-### Category: Notifications
-
-**Gap 8: FCM initialization timing vs. auth state**
-
-- FCM is initialized in `main()` before auth. Token is obtained. But
-  `saveTokenForUser(uid)` requires auth.
-- The spec item A7 says "delegate token storage to UserProfileService" but does
-  not define when this delegation happens -- on auth state change? On token
-  refresh?
-- Impact: Without a clear trigger, the token-to-user association will remain
-  broken.
-- Recommendation: Listen to auth state changes, and when a user signs in, save
-  the current FCM token. Also handle `onTokenRefresh` when auth is active.
-
-**Gap 9: Notification permission denied flow**
-
-- FCM requests permission at app launch (before the user even signs in).
-- The spec does not define: what happens if permission is denied, whether to
-  show a rationale screen first, whether to retry later, or how to handle iOS
-  provisional notifications.
-- Impact: Requesting permission before the user understands the app's value
-  leads to lower opt-in rates.
-- Recommendation: Defer notification permission request to after onboarding (the
-  third onboarding page is "Stay Updated" -- perfect place to request
-  permission).
-
-**Gap 10: Notification tap navigation**
-
-- `_handleMessageTap` currently just prints to console.
-- The spec does not define notification deep-linking behavior.
-- Impact: Users who tap notifications will see nothing happen.
-
-### Category: Router / Navigation
-
-**Gap 11: StatefulShellRoute migration (A3) interaction with existing routes**
-
-- The spec says to use `StatefulShellRoute` for Home + Profile tabs. But
-  `/settings` and `/paywall` are currently top-level routes outside the shell.
-- The spec does not clarify whether Settings moves into the Profile tab, remains
-  a separate pushed route, or becomes a tab. Same question for Paywall.
-- Impact: If Profile tab contains settings, the current `/settings` route
-  becomes redundant or conflicting.
-
-**Gap 12: Deep link handling**
-
-- The spec does not address deep links or universal links.
-- With the router rebuild fix (A1), `refreshListenable` changes how the router
-  responds to auth changes. The spec should clarify whether deep links need to
-  be preserved across auth state changes.
-
-**Gap 13: Back navigation from onboarding**
-
-- If a user is routed to onboarding, can they press the system back button? What
-  happens? Currently there is no `WillPopScope` / `PopScope` handling.
-
-### Category: Error Handling (U1)
-
-**Gap 14: Error boundary scope**
-
-- The spec says to add `runZonedGuarded` + `FlutterError.onError` +
-  `PlatformDispatcher.instance.onError`.
-- It does not define: which errors show the custom error UI vs. which are
-  silently logged, whether the error screen is dismissible, whether it replaces
-  the current screen or overlays it, or whether there is a "retry" action.
-
-**Gap 15: Crashlytics in debug mode**
-
-- The spec says "wire to Crashlytics in non-debug builds" but does not specify
-  what happens in debug builds. Just `debugPrint`? Or something else?
-
-### Category: Analytics (U3)
-
-**Gap 16: Analytics event schema**
-
-- The spec lists example events (sign_in, purchase, onboarding_complete) but
-  does not define their parameters, when exactly they fire, or whether custom
-  user properties are set.
-- Impact: Without defined parameters, analytics data will be inconsistent.
-
-### Category: Connectivity (U8)
-
-**Gap 17: Offline behavior definition**
-
-- The spec adds `connectivity_plus` with a banner but does not define: does the
-  app prevent actions while offline? Does Firestore offline persistence handle
-  it? What happens to in-flight purchases if connectivity drops?
-
-### Category: State Management
-
-**Gap 18: Provider disposal and lifecycle**
-
-- When a user signs out, multiple providers hold stale state:
-  `isPremiumProvider`, `customerInfoProvider`, `onboardingProvider`, any cached
-  `UserProfile`.
-- The spec's S6 fix addresses RevenueCat logout but does not address
-  invalidating/resetting all user-scoped providers.
-- Recommendation: Either use `ref.invalidate()` on sign-out for all user-scoped
-  providers, or scope them under a family provider keyed by uid.
-
-**Gap 19: Concurrent auth state changes**
-
-- The router watches `authStateProvider` which is a stream. If the user signs
-  out and signs back in rapidly (or auth token refreshes), multiple redirects
-  could queue up.
-- The A1 fix (`refreshListenable` with ChangeNotifier bridge) helps but does not
-  fully address debouncing.
+### Android applicationId Implications
+Different `applicationId` per flavor means:
+- Separate Play Store listings OR separate tracks in the same listing
+- Existing `google-services.json` must match each applicationId
+- Deep links configured for one applicationId will not work for another
+- FCM tokens are per-applicationId -- push notifications need separate setup per flavor
 
 ---
 
-## Critical Questions Requiring Clarification
+## Phase 2: l10n Migration
 
-### Critical (Blocks Implementation or Creates Security/Data Risks)
+### Dynamic Strings with Interpolation
+The codebase has interpolated strings that need parameterized ARB entries:
+- `Text(isPremium ? 'Premium' : 'Free')` -- conditional string, needs two ARB keys or a parameterized one
+- `Text('Version ...')` -- needs `"settingsVersion": "Version {version}"` with placeholder
+- Error messages from Firebase (`e.code` switch) -- need parameterized error strings
+- `SnackBar(content: Text(message))` where message comes from async operations -- the l10n context may not be available
 
-**Q1: When does user profile creation happen?**
-
-- `UserProfileService.createProfile()` exists but is never called. After A6
-  (UserProfile model), when exactly is `createProfile` invoked? On first sign-in
-  only? On every sign-in with an upsert? What if the Firestore write fails --
-  does auth succeed but profile fail?
-- Default assumption if unanswered: Call `createProfile` after every successful
-  sign-in with a set-with-merge to avoid overwriting existing data.
-
-**Q2: What is the re-authentication UX for account deletion (S2)?**
-
-- Does the user re-trigger Google/Apple OAuth silently? Is a confirmation dialog
-  sufficient for recently-authenticated users (within Firebase's re-auth
-  window)? What if re-auth fails?
-- Default assumption: Show a dialog explaining re-auth is needed, re-trigger the
-  same OAuth provider, show error and abort if it fails.
-
-**Q3: When is `PurchasesService.login(uid)` called?**
-
-- This method exists but is never invoked. Without it, A5 (premium state from
-  CustomerInfo) will return empty entitlements because the user is anonymous to
-  RevenueCat.
-- Default assumption: Call `login(uid)` immediately after Firebase auth
-  succeeds, before navigating away from auth screen.
-
-**Q4: How are user-scoped providers reset on sign-out?**
-
-- After S6 (RevenueCat logout on sign-out), are `isPremiumProvider`,
-  `customerInfoProvider`, `offeringsProvider`, and future `userProfileProvider`
-  all invalidated?
-- Default assumption: Call `ref.invalidate()` on each user-scoped provider
-  during the sign-out flow.
-
-### Important (Significantly Affects UX or Maintainability)
-
-**Q5: Should onboarding be a mandatory redirect or opt-in?**
-
-- The router TODO suggests mandatory redirect for new users. But the spec does
-  not include this as an item. Is this in scope for Phase 1?
-- Default assumption: Add automatic redirect to onboarding for new users
-  (onboardingComplete == false).
-
-**Q6: What does PremiumGate show while CustomerInfo loads (after A5)?**
-
-- Currently it reads a synchronous bool. After A5, it will depend on an async
-  provider. Show locked? Show loading? Show the premium content optimistically?
-- Default assumption: Show a loading shimmer, then resolve to locked or
-  unlocked.
-
-**Q7: Where do Settings and Paywall routes live after StatefulShellRoute
-migration (A3)?**
-
-- Are they pushed routes on top of the shell? Nested within a tab? Does Profile
-  tab include settings inline?
-- Default assumption: Profile tab shows user info + settings inline. Paywall
-  remains a pushed full-screen route.
-
-**Q8: When should FCM permission be requested?**
-
-- Currently at app launch, before auth. After improvements, should it move to
-  onboarding step 3? After onboarding? On first relevant feature use?
-- Default assumption: Request during onboarding step 3 ("Stay Updated"), skip if
-  notifications are disabled via feature flag.
-
-**Q9: What errors show the custom error UI (U1) vs. log silently?**
-
-- Network timeouts, Firestore permission denied, widget build errors, null
-  reference errors -- which get UI treatment?
-- Default assumption: Widget build errors show error UI. Network/Firestore
-  errors show snackbar. Unhandled exceptions log to Crashlytics silently.
-
-### Nice-to-Have (Improves Clarity but Has Reasonable Defaults)
-
-**Q10: Should the app support system theme mode in addition to manual toggle?**
-
-- Currently only light/dark toggle. `ThemeMode.system` is a third option.
-- Default assumption: Keep manual toggle only for simplicity.
-
-**Q11: What analytics parameters accompany each event?**
-
-- sign_in: provider (google/apple)? new vs returning?
-- purchase: product_id? price? currency?
-- Default assumption: Include provider for sign_in, product_id for purchase,
-  step count for onboarding.
-
-**Q12: Does the connectivity banner block UI interactions?**
-
-- Or is it purely informational?
-- Default assumption: Informational banner only, no blocking.
+### Missing from Spec
+- How to handle strings in non-widget contexts (services, providers) where `BuildContext` is unavailable for `AppLocalizations.of(context)`
+- Whether error messages from Firebase SDKs should be localized or passed through
+- Plural forms (e.g., "1 item" vs "2 items") -- even if not currently used, the ARB scaffolding should demonstrate the pattern
+- String keys naming convention (e.g., `settingsScreenTitle` vs `settings_screen_title` vs `settingsTitle`)
+- Whether to use `context.l10n.key` extension method or `AppLocalizations.of(context)!.key`
 
 ---
 
-## Cross-Phase Dependencies
+## Phase 3: Test Helpers
 
-### Dependency Chain 1 (Critical Path)
+### Risk: Over-Generalized Shared Mocks
+The spec calls for shared test helpers but does not address:
+- Tests that need slightly different mock return values (e.g., one test needs `authStateProvider` to emit a user, another needs null). A shared helper that always returns a logged-in user would force test authors to re-override.
+- The `ProviderScope` override pattern in main.dart uses conditional overrides (`if (AppConfig.enablePaywall)`). Test helpers need to replicate this conditionality or tests will diverge from production behavior.
+- Mock class instances vs mock provider overrides -- currently tests mix both patterns. The helpers should standardize on one approach.
 
-```
-A2 (service standardization)
-  -> T4 (notification tests) -- needs constructor injection
-  -> T5 (purchases tests) -- needs instance methods
-  -> A5 (premium state) -- needs proper service layer
-  -> A7 (FCM boundaries) -- needs injectable services
-```
-
-### Dependency Chain 2 (Profile Creation)
-
-```
-A6 (UserProfile model)
-  -> Gap 1 (profile creation trigger) -- MISSING FROM SPEC
-  -> Gap 2 (onboarding routing) -- MISSING FROM SPEC
-  -> A7 (FCM token storage delegation)
-  -> S1 (Firestore rules) -- rules depend on document structure
-```
-
-### Dependency Chain 3 (Error Handling)
-
-```
-U1 (global error handler)
-  -> U2 (Crashlytics) -- handler feeds into Crashlytics
-  -> S5 (user-friendly errors) -- handler maps exceptions
-  -> T2 (error tests) -- tests validate handler behavior
-```
-
-### Dependency Chain 4 (Premium)
-
-```
-Gap 4 (RevenueCat login call) -- MISSING FROM SPEC
-  -> A5 (premium state from CustomerInfo)
-  -> S6 (RevenueCat logout on sign-out)
-  -> Gap 5 (PremiumGate loading state)
-```
-
-### Risk: Phase 1 A5 will not work without Gap 4 being addressed first.
-
-The spec says to derive `isPremiumProvider` from `customerInfoProvider`, but
-`customerInfoProvider` calls `PurchasesService.getCustomerInfo()` which will
-return empty entitlements because `PurchasesService.login(uid)` is never called.
-This is a silent failure -- the feature will appear to work but premium status
-will never be restored.
-
-### Risk: Phase 2 S1 (Firestore rules) depends on Phase 1 A6 (UserProfile model).
-
-The Firestore rules need to know the document structure to add field validation.
-If A6 changes the document schema, S1 rules will need updating. The suggested
-implementation order (A6 before S1) is correct, but this dependency is implicit.
-
-### Risk: Phase 3 tests may need rewriting if Phase 1 changes service interfaces.
-
-T1-T3 are marked as critical tests, but if A1 (router) and A2 (service
-standardization) significantly change the public API, tests written before those
-changes will break. The suggested order (A1+A2 first, then T1-T3) handles this,
-but the spec should note that test writing should wait until after service
-interfaces stabilize.
+### Ordering Dependency
+Test helpers (Phase 3) should ideally be created BEFORE or DURING the Riverpod codegen migration (Phase 1), since every test file will need updating during migration. Doing them in Phase 3 means touching all test files twice.
 
 ---
 
-## Recommended Next Steps
+## Phase 4: Profile Expansion and Account Actions Migration
 
-1. **Add spec items for the 4 most critical gaps:**
-   - Profile creation trigger (Gap 1) -- without this, onboarding, FCM tokens,
-     and account data are all broken
-   - Onboarding auto-redirect (Gap 2) -- the router TODO is unfulfilled
-   - RevenueCat login call (Gap 4) -- without this, A5 silently fails
-   - Provider reset on sign-out (Gap 18) -- without this, stale state leaks
-     between users
+### Navigation Flow Changes
+Currently the bottom nav has tabs and adding Profile creates a new destination.
 
-2. **Clarify the re-authentication UX for S2** before implementation begins.
-   This is a user-facing flow with multiple error states that needs design
-   input.
+Missing specifications:
+- Does Profile get its own tab in the bottom nav, or is it accessed from an avatar/icon in the app bar?
+- If Profile is a new tab, the `StatefulShellRoute` in router.dart needs a third branch. What index does it get?
+- What route path? `/profile` presumably, but this needs to be added to `AppRoutes`.
+- What happens to the "Account" section in SettingsScreen after sign-out and delete-account move to Profile? The section becomes empty and should be removed, but the spec does not confirm this.
 
-3. **Reconsider FCM permission timing** (Gap 9). Moving it from `main()` to
-   onboarding step 3 would improve opt-in rates and is a small change with big
-   impact.
+### Delete Account Flow After Migration
+The delete account flow includes a confirmation dialog, re-authentication, and multi-step cleanup. Moving it to Profile means:
+- The `_showDeleteConfirmation` dialog logic moves to ProfileScreen
+- The `_isDeleting` state and error handling (FirebaseAuthException catch) must move too
+- If re-authentication fails with `requires-recent-login`, the user needs to sign out and sign back in. But they are on the Profile screen, not Settings. The UX flow for this error state needs clarification.
 
-4. **Define PremiumGate loading behavior** (Gap 5) before implementing A5. The
-   current synchronous API will become async, and every call site needs
-   updating.
+---
 
-5. **Document the implicit dependency between Gap 4 (RevenueCat login) and A5
-   (premium state restoration).** Without calling `login(uid)`, the entire
-   premium restoration feature silently returns empty data.
+## Phase 4: Consent Gate
 
-6. **Ensure test writing (Phase 3) begins only after Phase 1 service interfaces
-   stabilize.** The spec's suggested order already handles this, but making it
-   explicit prevents wasted effort.
+### Critical: Crashlytics Initializes Before Any UI
+In `main.dart`, Crashlytics error handlers are set up BEFORE `runApp()`. A consent gate that shows a UI prompt CANNOT gate this initialization because it happens before any widget renders. The spec does not address this fundamental timing problem.
+
+### Proposed Resolution Options (Spec Should Pick One)
+1. **Initialize Crashlytics disabled, enable after consent.** Call `setCrashlyticsCollectionEnabled(false)` in main.dart, show consent prompt on first frame, then call `setCrashlyticsCollectionEnabled(true)` if consented. Crashes before consent are lost.
+2. **Deferred initialization.** Do not set up error handlers in main.dart. Instead, set them up after consent in a provider. Crashes during app startup before consent are unhandled.
+3. **Consent on install, not on first launch.** Use app store descriptions to imply consent (legally weak in EU).
+
+### Missing Consent Specifications
+- What UI pattern? Full-screen modal, bottom sheet, or inline banner?
+- Can the user dismiss without choosing? If so, what is the default (opt-out)?
+- Where is consent state stored? SharedPreferences is mentioned, but this is not encrypted. For GDPR, consent records may need timestamps and version tracking.
+- Can the user change their mind later? If so, where in the UI? (Settings screen presumably, but the spec does not say.)
+- Does revoking consent require deleting already-collected data? GDPR says yes.
+- Analytics events are currently fired directly in widget code (auth_screen.dart, onboarding_screen.dart). Every `FirebaseAnalytics.instance.logEvent()` call needs to check consent state first. The spec does not mention wrapping these calls.
+- `post_auth_bootstrap_provider` sets Crashlytics user identifier and Analytics user properties. These must also be gated on consent.
+
+---
+
+## Cross-Phase Ordering Dependencies
+
+```
+1.1 (shared/auth fix) -> 1.2 (codegen migration)  [file paths must be stable before codegen]
+1.2 (codegen migration) -> 3.x (all test work)     [test override syntax changes with codegen]
+2.5 (flavors) -> 2.7 (CI/CD)                       [CI needs to know about flavors]
+4.1a (profile CRUD) -> 4.1b (account actions move)  [profile screen must exist first]
+4.3 (consent gate) -> 4.2 (analytics taxonomy)      [taxonomy is moot if analytics are gated]
+```
+
+### Risky Parallel Work
+- Phase 2 l10n (2.6) touches every screen's strings. Phase 4 profile expansion (4.1) adds new screens with new strings. If done in parallel, merge conflicts are guaranteed. L10n should complete first, or profile strings should be added as l10n entries from the start.
+- Phase 1 codegen (1.2) and Phase 3 test fixes (3.1-3.5) both modify test files. Doing them in sequence (1.2 first) avoids double-work.
+
+---
+
+## Summary of Critical Questions
+
+1. **Codegen + overrideWithValue:** How will the ~15 test files using `overrideWithValue` be migrated? Will you accept `overrideWith` as a universal replacement, or do some providers need to remain manual?
+
+2. **isPremiumProvider override in main.dart:** This provider is conditionally overridden with complex logic. How does this work under codegen? Does it stay manual?
+
+3. **feature_hooks.dart location:** After moving 3 providers to auth, does `feature_hooks.dart` stay in shared/ or move? It is imported by main.dart (composition root) AND by the moved providers.
+
+4. **Flavor fallback:** Will `--dart-define=ENV=prod` continue to work after flavors are added, for developers who have not set up Xcode schemes?
+
+5. **Firebase config per flavor:** Are there 3 Firebase projects or 3 apps in one project? Where do the per-flavor config files live?
+
+6. **Crashlytics timing vs consent:** Which of the three resolution options (initialize-disabled, deferred-init, or store-consent) will be used?
+
+7. **Consent revocation:** Does revoking analytics consent trigger deletion of previously collected data?
+
+8. **Profile tab position:** Is Profile a new bottom nav tab (requiring StatefulShellRoute changes) or accessed via app bar?
+
+9. **l10n in non-widget contexts:** How will strings in providers and services be localized without BuildContext?
+
+10. **Test helper timing:** Should shared test helpers be created during Phase 1 codegen migration to avoid touching test files twice?
