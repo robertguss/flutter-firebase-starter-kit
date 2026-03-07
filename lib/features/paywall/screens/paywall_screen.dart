@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
-import 'package:flutter_starter_kit/features/paywall/services/purchases_service.dart';
 import 'package:flutter_starter_kit/features/paywall/widgets/feature_comparison_row.dart';
 import 'package:go_router/go_router.dart';
 
@@ -24,9 +23,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     });
 
     try {
-      final customerInfo = await PurchasesService.restorePurchases();
+      final service = ref.read(purchasesServiceProvider);
+      final customerInfo = await service.restorePurchases();
+      // Invalidate to refresh derived isPremiumProvider
+      ref.invalidate(customerInfoProvider);
       final isPremium = customerInfo.entitlements.active.containsKey('premium');
-      ref.read(isPremiumProvider.notifier).state = isPremium;
       if (isPremium && mounted) {
         messenger.showSnackBar(
           const SnackBar(content: Text('Purchases restored!')),
@@ -124,13 +125,13 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                                 });
 
                                 try {
-                                  final info = await PurchasesService.purchase(
-                                    package,
-                                  );
+                                  final service =
+                                      ref.read(purchasesServiceProvider);
+                                  final info = await service.purchase(package);
+                                  // Invalidate to refresh derived isPremiumProvider
+                                  ref.invalidate(customerInfoProvider);
                                   final isPremium = info.entitlements.active
                                       .containsKey('premium');
-                                  ref.read(isPremiumProvider.notifier).state =
-                                      isPremium;
                                   if (isPremium && mounted) {
                                     router.pop();
                                   }
