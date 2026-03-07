@@ -9,7 +9,12 @@ import 'package:flutter_starter_kit/features/settings/providers/theme_provider.d
 import 'package:flutter_starter_kit/features/settings/widgets/settings_section.dart';
 import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+final packageInfoProvider = FutureProvider<PackageInfo>(
+  (ref) => PackageInfo.fromPlatform(),
+);
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -49,7 +54,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ListTile(
                   title: const Text('Current Plan'),
                   subtitle: Text(isPremium ? 'Premium' : 'Free'),
-                  trailing: isPremium ? null : const Icon(Icons.chevron_right),
+                  trailing: isPremium ? null : const Icon(Icons.chevron_right, semanticLabel: 'View plans'),
                   onTap:
                       isPremium ? null : () => context.push(AppRoutes.paywall),
                 ),
@@ -94,12 +99,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             children: [
               ListTile(
                 title: const Text('Privacy Policy'),
-                trailing: const Icon(Icons.open_in_new),
+                trailing: const Icon(Icons.open_in_new, semanticLabel: 'Opens in browser'),
                 onTap: () => launchUrl(Uri.parse(AppConfig.privacyPolicyUrl)),
               ),
               ListTile(
                 title: const Text('Terms of Service'),
-                trailing: const Icon(Icons.open_in_new),
+                trailing: const Icon(Icons.open_in_new, semanticLabel: 'Opens in browser'),
                 onTap: () => launchUrl(Uri.parse(AppConfig.termsOfServiceUrl)),
               ),
             ],
@@ -129,6 +134,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 24),
+          ref.watch(packageInfoProvider).when(
+                data: (info) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'Version ${info.version} (${info.buildNumber})',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+          const SizedBox(height: 16),
         ],
       ),
     );

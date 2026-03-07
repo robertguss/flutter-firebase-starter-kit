@@ -967,7 +967,7 @@ lib/firebase_options.dart
 - [x] No `error.toString()` shown to users
 - [x] Errors mapped inline at each call site (no shared utility file)
 - [x] `FirebaseAuthException`, `PlatformException`, and generic errors handled
-- [ ] Full errors logged to Crashlytics (not `print`)
+- [x] Full errors logged to Crashlytics (not `print`)
 - [x] User sees friendly message via SnackBar
 
 ##### 2.6 Fix sign-out RevenueCat cleanup (S6)
@@ -1195,12 +1195,12 @@ class ErrorScreen extends StatelessWidget {
 
 **Acceptance criteria:**
 
-- [ ] `FlutterError.onError` catches widget errors
-- [ ] `PlatformDispatcher.instance.onError` catches async/platform errors
-- [ ] `setCrashlyticsCollectionEnabled(!kDebugMode)` called during init
-- [ ] Firebase + RevenueCat init parallelized with `Future.wait()`
-- [ ] Custom `ErrorScreen` widget exists for graceful degradation
-- [ ] Errors sent to Crashlytics (collection disabled in debug mode)
+- [x] `FlutterError.onError` catches widget errors
+- [x] `PlatformDispatcher.instance.onError` catches async/platform errors
+- [x] `setCrashlyticsCollectionEnabled(!kDebugMode)` called during init
+- [x] Firebase + RevenueCat init parallelized with `Future.wait()`
+- [x] Custom `ErrorScreen` widget exists for graceful degradation
+- [x] Errors sent to Crashlytics (collection disabled in debug mode)
 
 ##### 4.2 Add Firebase Crashlytics (U2)
 
@@ -1210,12 +1210,12 @@ modify:** `lib/config/app_config.dart` -- add `enableCrashlytics` feature flag
 
 **Acceptance criteria:**
 
-- [ ] `firebase_crashlytics` package added
-- [ ] Feature-flag gated (`AppConfig.enableCrashlytics`)
-- [ ] Wired to global error handler (4.1)
-- [ ] `setUserIdentifier(uid)` called after sign-in (in bootstrap provider)
-- [ ] User identifier cleared on sign-out
-- [ ] `setCrashlyticsCollectionEnabled(!kDebugMode)` during init
+- [x] `firebase_crashlytics` package added
+- [x] Feature-flag gated (`AppConfig.enableCrashlytics`)
+- [x] Wired to global error handler (4.1)
+- [x] `setUserIdentifier(uid)` called after sign-in (in bootstrap provider)
+- [x] User identifier cleared on sign-out
+- [x] `setCrashlyticsCollectionEnabled(!kDebugMode)` during init
 
 ##### 4.3 Add Firebase Analytics (U3)
 
@@ -1256,14 +1256,14 @@ FirebaseAnalytics.instance.setUserProperty(
 
 **Acceptance criteria:**
 
-- [ ] `firebase_analytics` package added
-- [ ] Feature-flag gated (`AppConfig.enableAnalytics`)
-- [ ] `setAnalyticsCollectionEnabled` called with feature flag
-- [ ] NO `AnalyticsService` wrapper -- use `FirebaseAnalytics.instance` directly
-- [ ] Example inline analytics calls in auth, onboarding, and paywall flows
-- [ ] Custom event names avoid collision with Firebase automatic events
-- [ ] `FirebaseAnalyticsObserver` wired into GoRouter for screen tracking
-- [ ] User properties set for segmentation (`premium_status`)
+- [x] `firebase_analytics` package added
+- [x] Feature-flag gated (`AppConfig.enableAnalytics`)
+- [x] `setAnalyticsCollectionEnabled` called with feature flag
+- [x] NO `AnalyticsService` wrapper -- use `FirebaseAnalytics.instance` directly
+- [x] Example inline analytics calls in auth, onboarding, and paywall flows
+- [x] Custom event names avoid collision with Firebase automatic events
+- [x] `FirebaseAnalyticsObserver` wired into GoRouter for screen tracking
+- [x] User properties set for segmentation (`premium_status`)
 
 ##### 4.4 Remove flutter_animate (U4 + C2)
 
@@ -1277,8 +1277,8 @@ FirebaseAnalytics.instance.setUserProperty(
 
 **Acceptance criteria:**
 
-- [ ] `flutter_animate` removed from dependencies
-- [ ] Any animations use built-in Flutter implicit animations only
+- [x] `flutter_animate` removed from dependencies
+- [x] Any animations use built-in Flutter implicit animations only
 
 ##### 4.5 Add empty state widget (U5)
 
@@ -1294,9 +1294,9 @@ FirebaseAnalytics.instance.setUserProperty(
 
 **Acceptance criteria:**
 
-- [ ] `EmptyState` widget with customizable icon, title, subtitle, action
-- [ ] No `SkeletonLoader` -- use `CircularProgressIndicator` for loading
-- [ ] Used in at least one screen (e.g., Profile when no data)
+- [x] `EmptyState` widget with customizable icon, title, subtitle, action
+- [x] No `SkeletonLoader` -- use `CircularProgressIndicator` for loading
+- [x] Used in at least one screen (e.g., Profile when no data)
 
 ##### 4.6 Fix accessibility gaps (U6)
 
@@ -1308,9 +1308,9 @@ FirebaseAnalytics.instance.setUserProperty(
 
 **Acceptance criteria:**
 
-- [ ] All icons have `semanticLabel` or are wrapped in `Semantics`
-- [ ] Color-only indicators have text alternatives
-- [ ] Touch targets meet 48dp minimum
+- [x] All icons have `semanticLabel` or are wrapped in `Semantics`
+- [x] Color-only indicators have text alternatives
+- [x] Touch targets meet 48dp minimum
 
 ##### 4.7 Add app version to settings (U7)
 
@@ -1320,8 +1320,8 @@ FirebaseAnalytics.instance.setUserProperty(
 
 **Acceptance criteria:**
 
-- [ ] App version and build number shown in settings
-- [ ] Feedback/support link or email in settings
+- [x] App version and build number shown in settings
+- [ ] Feedback/support link or email in settings (deferred — app-specific)
 
 ##### 4.8 Add generic onboarding content (U9)
 
@@ -1335,9 +1335,9 @@ FirebaseAnalytics.instance.setUserProperty(
 
 **Acceptance criteria:**
 
-- [ ] Three onboarding pages with real-looking content
-- [ ] Content is clearly generic/replaceable (documented in inline comments)
-- [ ] Uses built-in implicit animations if needed (no `flutter_animate`)
+- [x] Three onboarding pages with real-looking content
+- [x] Content is clearly generic/replaceable (documented in inline comments)
+- [x] Uses built-in implicit animations if needed (no `flutter_animate`)
 
 ---
 

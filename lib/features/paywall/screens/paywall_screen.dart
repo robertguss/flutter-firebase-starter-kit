@@ -68,7 +68,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       appBar: AppBar(
         title: const Text('Upgrade'),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.close, semanticLabel: 'Close'),
           onPressed: () => context.pop(),
         ),
       ),
