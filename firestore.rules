@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      // Helper: validate allowed fields and types
+      function validFields() {
+        return request.resource.data.keys().hasOnly(
+          ['email', 'displayName', 'photoUrl', 'onboardingComplete',
+           'fcmToken', 'createdAt']
+        )
+        && (request.resource.data.onboardingComplete is bool)
+        && (request.resource.data.get('displayName', '') is string)
+        && (request.resource.data.get('fcmToken', '') is string);
+      }
+
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null && request.auth.uid == uid
+        && validFields()
+        && request.resource.data.email == request.auth.token.email;
+
+      allow update: if request.auth != null && request.auth.uid == uid
+        && validFields()
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+    // Deny everything else by default
+  }
+}
