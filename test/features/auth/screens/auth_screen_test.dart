@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/screens/auth_screen.dart';
 import 'package:flutter_starter_kit/features/auth/services/auth_service.dart';
+import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -24,7 +25,12 @@ void main() {
       overrides: [
         authServiceProvider.overrideWithValue(mockAuthService),
       ],
-      child: const MaterialApp(home: AuthScreen()),
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: Locale('en'),
+        home: AuthScreen(),
+      ),
     );
   }
 

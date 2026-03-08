@@ -12,29 +12,39 @@ Firebase for backend, and RevenueCat for payments.
 ## Commands
 
 ```bash
-# Install dependencies
-flutter pub get
+# Initial setup (install deps + analyze)
+make setup
 
-# Run the app (defaults to dev environment)
+# Install dependencies
+make get
+
+# Run the app (default — uses --dart-define=ENV=dev)
 flutter run
 
-# Run with specific environment
-flutter run --dart-define=ENV=dev
-flutter run --dart-define=ENV=staging
-flutter run --dart-define=ENV=prod
+# Run with flavors (recommended)
+make run-dev        # flutter run --flavor dev -t lib/main_dev.dart
+make run-staging    # flutter run --flavor staging -t lib/main_staging.dart
+make run-prod       # flutter run --flavor prod -t lib/main_prod.dart
 
 # Build for production
-flutter build ios --dart-define=ENV=prod
-flutter build apk --dart-define=ENV=prod
+flutter build ios --flavor prod -t lib/main_prod.dart
+flutter build apk --flavor prod -t lib/main_prod.dart
 
 # Run all tests
-flutter test
+make test
 
 # Run a single test file
 flutter test test/features/auth/providers/auth_provider_test.dart
 
 # Analyze code (uses flutter_lints + custom_lint with riverpod_lint)
-flutter analyze
+make analyze
+
+# Code generation (Riverpod codegen, l10n)
+make build-runner
+make watch          # watch mode
+
+# See all available commands
+make help
 ```
 
 ## Architecture
@@ -47,8 +57,14 @@ be independently deletable.
 
 ```
 lib/
-├── main.dart                    # Entry point: init Firebase, RevenueCat, FCM
-├── app.dart                     # MaterialApp.router with theme + router
+├── main.dart                    # Default entry point (--dart-define fallback)
+├── main_dev.dart                # Dev flavor entry point
+├── main_staging.dart            # Staging flavor entry point
+├── main_prod.dart               # Prod flavor entry point
+├── bootstrap.dart               # Shared init: Firebase, RevenueCat, FCM, hooks
+├── app.dart                     # MaterialApp.router with theme + router + l10n
+├── l10n/
+│   └── app_en.arb               # English strings (add app_XX.arb for new locales)
 ├── config/
 │   ├── app_config.dart          # App name, API keys, feature flags
 │   ├── environment.dart         # ENV enum (dev/staging/prod) via --dart-define
@@ -77,11 +93,30 @@ lib/
   redirect to `/home`. `StatefulShellRoute` wraps the home tab scaffold.
 - **Feature Flags**: `AppConfig.enablePaywall` and
   `AppConfig.enableNotifications` control whether RevenueCat and FCM initialize
-  in `main()`.
+  in `bootstrap()`.
 - **Theming**: `AppTheme` generates light/dark `ThemeData` from a seed color.
   `themeModeProvider` (Riverpod) tracks user preference.
-- **Environment**: Set via `--dart-define=ENV=dev|staging|prod`. Parsed in
-  `EnvironmentConfig.init()`.
+- **Environment**: Set via flavor entry points (`main_dev.dart`,
+  `main_staging.dart`, `main_prod.dart`) or fallback `--dart-define=ENV=dev`.
+- **Localization**: Flutter's built-in l10n with ARB files in `lib/l10n/`. All
+  user-facing strings use `AppLocalizations.of(context)`.
+
+### Architectural Rules
+
+- `shared/` **never** imports from `features/`. Features may import from
+  `shared/` and from other features only through the composition root
+  (`lib/bootstrap.dart`).
+- Each feature is independently deletable. See
+  `docs/guides/removing-features.md` for step-by-step removal checklists.
+
+### Documentation
+
+See `docs/guides/` for detailed guides:
+
+- `getting-started-macos.md` — full setup walkthrough
+- `removing-features.md` — how to remove paywall, notifications, or onboarding
+- `firebase-authentication-setup.md` — Firebase Auth configuration
+- `revenuecat-setup.md` — RevenueCat configuration
 
 ### Configuration Files (the 3 files to edit)
 

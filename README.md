@@ -43,21 +43,28 @@ If you want the full step-by-step setup flow, start here:
 Short version:
 
 ```bash
-git clone <your-fork-or-repo-url> mobile-starter-kit
-cd mobile-starter-kit
-flutter pub get
-flutterfire configure
-flutter run --dart-define=ENV=dev
+git clone <your-fork-or-repo-url> my-app
+cd my-app
+make setup                    # install deps + analyze
+flutterfire configure         # generate firebase_options.dart
+flutter run                   # or: make run-dev
 ```
 
-Before the app is truly ready, you still need to:
+### 3 files to customize your app
 
-- replace placeholder values in `lib/config/app_config.dart`
-- configure Firebase Authentication providers
-- configure Firestore
-- configure RevenueCat products, offerings, and API keys
-- finish iOS push-notification capabilities and APNs setup if notifications are
-  enabled
+1. `lib/config/app_config.dart` — app name, RevenueCat API keys, feature flags
+2. `lib/config/theme.dart` — seed color, font family
+3. `lib/config/environment.dart` — environment selection
+
+### Plus standard platform setup
+
+- Configure Firebase Authentication providers (Google, Apple) in the Firebase
+  Console
+- Configure Firestore security rules
+- Configure RevenueCat products, offerings, and API keys (if paywall is enabled)
+- Finish iOS push-notification capabilities and APNs setup (if notifications are
+  enabled)
+- Update bundle identifiers for your app
 
 ## Documentation Map
 
@@ -65,6 +72,8 @@ Before the app is truly ready, you still need to:
 - [Getting Started on macOS](./docs/guides/getting-started-macos.md)
 - [Firebase and Authentication Setup](./docs/guides/firebase-authentication-setup.md)
 - [RevenueCat Setup](./docs/guides/revenuecat-setup.md)
+- [Removing Features](./docs/guides/removing-features.md) — paywall,
+  notifications, onboarding
 - [Configuration Reference](./docs/reference/configuration-reference.md)
 - [Architecture Overview](./docs/reference/architecture.md)
 - [Changelog](./docs/CHANGELOG.md)
@@ -98,8 +107,8 @@ Current gaps you should plan to close:
 ## Local Verification
 
 ```bash
-flutter analyze
-flutter test
+make analyze
+make test
 ```
 
 ## Open Source Positioning

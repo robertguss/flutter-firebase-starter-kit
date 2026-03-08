@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
@@ -70,6 +71,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final currentPage = ref.watch(onboardingProvider);
     final isLastPage = currentPage == _totalPages - 1;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -79,7 +81,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: _completeOnboarding,
-                child: const Text('Skip'),
+                child: Text(l10n.skip),
               ),
             ),
             Expanded(
@@ -107,7 +109,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               curve: Curves.easeInOut,
                             );
                           },
-                  child: Text(isLastPage ? 'Get Started' : 'Next'),
+                  child: Text(isLastPage ? l10n.getStarted : l10n.next),
                 ),
               ),
             ),

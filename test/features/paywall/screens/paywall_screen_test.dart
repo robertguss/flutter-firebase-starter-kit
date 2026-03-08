@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
 import 'package:flutter_starter_kit/features/paywall/screens/paywall_screen.dart';
 import 'package:flutter_starter_kit/features/paywall/services/purchases_service.dart';
+import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -48,7 +49,12 @@ void main() {
 
     return ProviderScope(
       overrides: overrides,
-      child: MaterialApp.router(routerConfig: router),
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
+      ),
     );
   }
 

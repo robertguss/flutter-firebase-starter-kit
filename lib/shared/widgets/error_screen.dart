@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 
 class ErrorScreen extends StatelessWidget {
   const ErrorScreen({super.key, required this.message, this.onRetry});
@@ -8,6 +9,7 @@ class ErrorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Center(
         child: Padding(
@@ -19,7 +21,7 @@ class ErrorScreen extends StatelessWidget {
                 Icons.error_outline,
                 size: 64,
                 color: Theme.of(context).colorScheme.error,
-                semanticLabel: 'Error',
+                semanticLabel: l10n.errorSemanticLabel,
               ),
               const SizedBox(height: 16),
               Text(
@@ -31,7 +33,7 @@ class ErrorScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: onRetry,
-                  child: const Text('Retry'),
+                  child: Text(l10n.retry),
                 ),
               ],
             ],

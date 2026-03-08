@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
@@ -16,6 +17,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   bool _isLoading = false;
 
   Future<void> _restorePurchases() async {
+    final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
 
@@ -31,23 +33,23 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       final isPremium = customerInfo.entitlements.active.containsKey('premium');
       if (isPremium && mounted) {
         messenger.showSnackBar(
-          const SnackBar(content: Text('Purchases restored!')),
+          SnackBar(content: Text(l10n.purchasesRestored)),
         );
         router.pop();
       }
     } on PlatformException {
       if (mounted) {
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Something went wrong. Please try again.'),
+          SnackBar(
+            content: Text(l10n.genericError),
           ),
         );
       }
     } catch (_) {
       if (mounted) {
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Something went wrong. Please try again.'),
+          SnackBar(
+            content: Text(l10n.genericError),
           ),
         );
       }
@@ -63,12 +65,13 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   @override
   Widget build(BuildContext context) {
     final offerings = ref.watch(offeringsProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Upgrade'),
+        title: Text(l10n.upgrade),
         leading: IconButton(
-          icon: const Icon(Icons.close, semanticLabel: 'Close'),
+          icon: Icon(Icons.close, semanticLabel: l10n.close),
           onPressed: () => context.pop(),
         ),
       ),
@@ -78,12 +81,12 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
           child: Column(
             children: [
               Text(
-                'Unlock Premium',
+                l10n.unlockPremium,
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 8),
               Text(
-                'Get access to all features',
+                l10n.getAccessToAllFeatures,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -112,12 +115,12 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 data: (offerings) {
                   final current = offerings.current;
                   if (current == null) {
-                    return const Text('No offerings available');
+                    return Text(l10n.noOfferingsAvailable);
                   }
 
                   final packages = current.availablePackages;
                   if (packages.isEmpty) {
-                    return const Text('No packages available');
+                    return Text(l10n.noPackagesAvailable);
                   }
 
                   final package = packages.first;
@@ -149,20 +152,16 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                                 } on PlatformException {
                                   if (mounted) {
                                     messenger.showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Something went wrong. Please try again.',
-                                        ),
+                                      SnackBar(
+                                        content: Text(l10n.genericError),
                                       ),
                                     );
                                   }
                                 } catch (_) {
                                   if (mounted) {
                                     messenger.showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Something went wrong. Please try again.',
-                                        ),
+                                      SnackBar(
+                                        content: Text(l10n.genericError),
                                       ),
                                     );
                                   }
@@ -176,19 +175,19 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                               },
                       child: Text(
                         _isLoading
-                            ? 'Loading...'
-                            : 'Subscribe - ${package.storeProduct.priceString}',
+                            ? l10n.loading
+                            : l10n.subscribePrice(package.storeProduct.priceString),
                       ),
                     ),
                   );
                 },
                 loading: () => const CircularProgressIndicator(),
-                error: (_, __) => const Text('Unable to load offerings. Please try again.'),
+                error: (_, __) => Text(l10n.unableToLoadOfferings),
               ),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _isLoading ? null : _restorePurchases,
-                child: const Text('Restore Purchases'),
+                child: Text(l10n.restorePurchases),
               ),
               const SizedBox(height: 16),
             ],

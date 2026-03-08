@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_starter_kit/shared/widgets/loading_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -7,6 +8,9 @@ void main() {
     testWidgets('shows CircularProgressIndicator when loading', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('en'),
           home: Scaffold(
             body: LoadingState(
               isLoading: true,
@@ -23,6 +27,9 @@ void main() {
     testWidgets('shows child when not loading and no error', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('en'),
           home: Scaffold(
             body: LoadingState(
               isLoading: false,
@@ -39,6 +46,9 @@ void main() {
     testWidgets('shows error message when error is present', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('en'),
           home: Scaffold(
             body: LoadingState(
               isLoading: false,
@@ -58,6 +68,9 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
           home: Scaffold(
             body: LoadingState(
               isLoading: false,
@@ -78,6 +91,9 @@ void main() {
     testWidgets('hides retry button when onRetry is null', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('en'),
           home: Scaffold(
             body: LoadingState(
               isLoading: false,
