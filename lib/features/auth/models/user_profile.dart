@@ -70,6 +70,18 @@ class UserProfile {
           fcmToken == other.fcmToken &&
           createdAt == other.createdAt;
 
+  /// Percentage of profile fields that are filled (0.0 to 1.0).
+  /// Counts: displayName, photoUrl, email, onboardingComplete.
+  double get completionPercentage {
+    var filled = 0;
+    const total = 4;
+    if (displayName != null && displayName!.isNotEmpty) filled++;
+    if (photoUrl != null && photoUrl!.isNotEmpty) filled++;
+    if (email != null && email!.isNotEmpty) filled++;
+    if (onboardingComplete) filled++;
+    return filled / total;
+  }
+
   @override
   int get hashCode => Object.hash(
         uid,

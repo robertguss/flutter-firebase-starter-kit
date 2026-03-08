@@ -119,6 +119,51 @@ void main() {
       });
     });
 
+    group('completionPercentage', () {
+      test('returns 1.0 when all fields filled', () {
+        final profile = UserProfile(
+          uid: 'uid-1',
+          email: 'test@example.com',
+          displayName: 'Test User',
+          photoUrl: 'https://example.com/photo.jpg',
+          onboardingComplete: true,
+          createdAt: DateTime(2026, 1, 1),
+        );
+        expect(profile.completionPercentage, 1.0);
+      });
+
+      test('returns 0.0 when no optional fields filled', () {
+        final profile = UserProfile(
+          uid: 'uid-1',
+          onboardingComplete: false,
+          createdAt: DateTime(2026, 1, 1),
+        );
+        expect(profile.completionPercentage, 0.0);
+      });
+
+      test('returns 0.5 when half the fields filled', () {
+        final profile = UserProfile(
+          uid: 'uid-1',
+          email: 'test@example.com',
+          onboardingComplete: true,
+          createdAt: DateTime(2026, 1, 1),
+        );
+        expect(profile.completionPercentage, 0.5);
+      });
+
+      test('empty strings count as unfilled', () {
+        final profile = UserProfile(
+          uid: 'uid-1',
+          displayName: '',
+          photoUrl: '',
+          email: '',
+          onboardingComplete: false,
+          createdAt: DateTime(2026, 1, 1),
+        );
+        expect(profile.completionPercentage, 0.0);
+      });
+    });
+
     group('equality', () {
       test('equal profiles are equal', () {
         final now = DateTime(2026, 1, 1);

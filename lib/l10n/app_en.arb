@@ -89,6 +89,16 @@
   "displayNameUpdateFailed": "Failed to update display name",
   "noProfileData": "No profile data",
 
+  "preferences": "Preferences",
+  "notifications": "Notifications",
+  "notificationsDescription": "Receive push notifications",
+  "profileCompletion": "Profile {percent}% complete",
+  "@profileCompletion": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+
   "analyticsConsent": "Help Improve This App",
   "analyticsConsentDescription": "Allow anonymous crash reports and usage analytics to help us improve the app experience.",
   "accept": "Accept",

@@ -229,6 +229,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noProfileData => 'No profile data';
 
   @override
+  String get preferences => 'Preferences';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get notificationsDescription => 'Receive push notifications';
+
+  @override
+  String profileCompletion(String percent) {
+    return 'Profile $percent% complete';
+  }
+
+  @override
   String get analyticsConsent => 'Help Improve This App';
 
   @override

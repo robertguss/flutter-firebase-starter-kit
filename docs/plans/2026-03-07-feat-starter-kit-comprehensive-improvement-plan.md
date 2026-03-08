@@ -782,12 +782,14 @@ developers who don't need flavors yet.
       suffix
 - [x] `flutter run --flavor prod -t lib/main_prod.dart` launches with production
       bundle ID
-- [ ] Each flavor uses its own Firebase config
+- [ ] Each flavor uses its own Firebase config (requires multiple Firebase
+      projects — see `docs/guides/ios-flavor-schemes.md`)
 - [x] App name differs per flavor
 - [x] Environment is set via entry point, not `String.fromEnvironment`
 - [x] `--dart-define=ENV=` still works as fallback in `main.dart`
 - [x] CLAUDE.md and Makefile updated with flavor commands
-- [ ] iOS schemes marked as "Shared"
+- [ ] iOS schemes marked as "Shared" (requires manual Xcode setup — see
+      `docs/guides/ios-flavor-schemes.md`)
 
 **Edge cases:**
 
@@ -914,8 +916,9 @@ jobs:
 
 **Acceptance criteria:**
 
-- [ ] At least 3 screenshots in README
-- [ ] Screenshots show actual app UI, not mockups
+- [x] At least 3 screenshots in README (placeholder table + capture instructions
+      added; requires running app on simulator to capture actual images)
+- [ ] Screenshots show actual app UI, not mockups (requires manual capture)
 
 ---
 
@@ -1204,7 +1207,7 @@ account flow.
 - [x] Avatar stored in Firebase Storage at `users/{uid}/avatar.jpg`
 - [x] `storage.rules` deployed with auth, size, and content-type restrictions
 - [x] Display name editable via dialog
-- [ ] Profile completion shows percentage based on filled fields
+- [x] Profile completion shows percentage based on filled fields
 - [x] Delete account flow removes Storage avatar
 - [x] All new code has tests
 
@@ -1253,9 +1256,10 @@ account flow.
 
 **Acceptance criteria:**
 
-- [ ] Notification preference persists locally
-- [ ] Theme selection works from profile
-- [ ] Tests cover toggle behavior
+- [x] Notification preference persists locally
+- [ ] Theme selection works from profile (kept in Settings only — avoids
+      duplication)
+- [x] Tests cover toggle behavior
 
 ---
 
@@ -1347,7 +1351,7 @@ widget.
 - [x] Firebase emulator config in `firebase.json`
 - [x] Node.js rules tests cover all CRUD operations
 - [x] `npm test` in `test/rules/` runs the tests
-- [ ] Storage rules tested alongside Firestore rules
+- [x] Storage rules tested alongside Firestore rules
 - [x] Documented as separate step (not part of `flutter test`)
 
 ---

@@ -514,6 +514,30 @@ abstract class AppLocalizations {
   /// **'No profile data'**
   String get noProfileData;
 
+  /// No description provided for @preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferences;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @notificationsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive push notifications'**
+  String get notificationsDescription;
+
+  /// No description provided for @profileCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile {percent}% complete'**
+  String profileCompletion(String percent);
+
   /// No description provided for @analyticsConsent.
   ///
   /// In en, this message translates to:
