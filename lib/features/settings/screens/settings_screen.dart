@@ -2,10 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
-import 'package:flutter_starter_kit/shared/providers/delete_account_provider.dart';
+import 'package:flutter_starter_kit/features/auth/providers/delete_account_provider.dart';
+import 'package:flutter_starter_kit/features/auth/providers/sign_out_provider.dart';
 import 'package:flutter_starter_kit/shared/providers/feature_hooks.dart';
 import 'package:flutter_starter_kit/shared/providers/premium_provider.dart';
-import 'package:flutter_starter_kit/shared/providers/sign_out_provider.dart';
 import 'package:flutter_starter_kit/features/settings/providers/package_info_provider.dart';
 import 'package:flutter_starter_kit/features/settings/providers/theme_provider.dart';
 import 'package:flutter_starter_kit/features/settings/widgets/settings_section.dart';
@@ -35,12 +35,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsSection(
             title: 'Appearance',
             children: [
-              SwitchListTile(
-                title: const Text('Dark Mode'),
-                value: themeMode == ThemeMode.dark,
-                onChanged: (_) {
-                  ref.read(themeModeProvider.notifier).toggle();
-                },
+              ListTile(
+                title: const Text('Theme'),
+                subtitle: Text(switch (themeMode) {
+                  ThemeMode.system => 'System',
+                  ThemeMode.light => 'Light',
+                  ThemeMode.dark => 'Dark',
+                }),
+                trailing: SegmentedButton<ThemeMode>(
+                  segments: const [
+                    ButtonSegment(value: ThemeMode.system, label: Text('System')),
+                    ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode)),
+                    ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode)),
+                  ],
+                  selected: {themeMode},
+                  onSelectionChanged: (selected) {
+                    ref.read(themeModeProvider.notifier).setMode(selected.first);
+                  },
+                ),
               ),
             ],
           ),

@@ -13,8 +13,32 @@ void main() {
       container.dispose();
     });
 
-    test('defaults to light mode when no preference saved', () async {
+    test('defaults to system mode when no preference saved', () async {
       SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+
+      final themeMode = container.read(themeModeProvider);
+      expect(themeMode, ThemeMode.system);
+    });
+
+    test('loads dark mode from string preference', () async {
+      SharedPreferences.setMockInitialValues({'theme_mode': 'dark'});
+      final prefs = await SharedPreferences.getInstance();
+
+      container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+
+      final themeMode = container.read(themeModeProvider);
+      expect(themeMode, ThemeMode.dark);
+    });
+
+    test('loads light mode from string preference', () async {
+      SharedPreferences.setMockInitialValues({'theme_mode': 'light'});
       final prefs = await SharedPreferences.getInstance();
 
       container = ProviderContainer(
@@ -25,7 +49,7 @@ void main() {
       expect(themeMode, ThemeMode.light);
     });
 
-    test('loads dark mode synchronously when saved', () async {
+    test('migrates legacy boolean true to dark', () async {
       SharedPreferences.setMockInitialValues({'theme_mode': true});
       final prefs = await SharedPreferences.getInstance();
 
@@ -33,12 +57,26 @@ void main() {
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
 
-      // Must be dark immediately — no async race condition
       final themeMode = container.read(themeModeProvider);
       expect(themeMode, ThemeMode.dark);
+      // Verify migration wrote string format
+      expect(prefs.getString('theme_mode'), 'dark');
     });
 
-    test('toggles to dark mode', () async {
+    test('migrates legacy boolean false to light', () async {
+      SharedPreferences.setMockInitialValues({'theme_mode': false});
+      final prefs = await SharedPreferences.getInstance();
+
+      container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+
+      final themeMode = container.read(themeModeProvider);
+      expect(themeMode, ThemeMode.light);
+      expect(prefs.getString('theme_mode'), 'light');
+    });
+
+    test('setMode changes to dark', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 
@@ -46,25 +84,23 @@ void main() {
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
 
-      container.read(themeModeProvider.notifier).toggle();
+      container.read(themeModeProvider.notifier).setMode(ThemeMode.dark);
       expect(container.read(themeModeProvider), ThemeMode.dark);
     });
 
-    test('toggles back to light mode', () async {
-      SharedPreferences.setMockInitialValues({});
+    test('setMode changes to system', () async {
+      SharedPreferences.setMockInitialValues({'theme_mode': 'dark'});
       final prefs = await SharedPreferences.getInstance();
 
       container = ProviderContainer(
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
 
-      final notifier = container.read(themeModeProvider.notifier);
-      notifier.toggle();
-      notifier.toggle();
-      expect(container.read(themeModeProvider), ThemeMode.light);
+      container.read(themeModeProvider.notifier).setMode(ThemeMode.system);
+      expect(container.read(themeModeProvider), ThemeMode.system);
     });
 
-    test('persists preference to SharedPreferences', () async {
+    test('persists preference as string to SharedPreferences', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 
@@ -72,10 +108,8 @@ void main() {
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
 
-      container.read(themeModeProvider.notifier).toggle();
-
-      // Verify persisted
-      expect(prefs.getBool('theme_mode'), true);
+      container.read(themeModeProvider.notifier).setMode(ThemeMode.dark);
+      expect(prefs.getString('theme_mode'), 'dark');
     });
   });
 }

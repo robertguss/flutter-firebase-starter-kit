@@ -20,14 +20,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   EnvironmentConfig.init();
+  AppConfig.debugCheckPlaceholders();
 
   // Initialize Firebase first (required by Crashlytics)
   await FirebaseService.initialize();
 
   // Set up Crashlytics error handlers AFTER Firebase init, BEFORE runApp
-  if (AppConfig.enableCrashlytics) {
+  if (AppConfig.enableCrashlytics && EnvironmentConfig.current.enableCrashlytics) {
     await FirebaseCrashlytics.instance
-        .setCrashlyticsCollectionEnabled(!kDebugMode);
+        .setCrashlyticsCollectionEnabled(true);
 
     FlutterError.onError = (details) {
       FlutterError.presentError(details);
@@ -73,10 +74,16 @@ Future<void> main() async {
 
   if (AppConfig.enableNotifications) {
     bootstrapHooks.add((ref, uid) async {
-      final token = await ref.read(fcmServiceProvider).getToken();
+      final fcmService = ref.read(fcmServiceProvider);
+      final profileService = ref.read(userProfileServiceProvider);
+      final token = await fcmService.getToken();
       if (token != null) {
-        await ref.read(userProfileServiceProvider).updateFcmToken(uid, token);
+        await profileService.updateFcmToken(uid, token);
       }
+      fcmService.startTokenRefreshListener(uid, profileService);
+    });
+    signOutHooks.add((ref, uid) async {
+      ref.read(fcmServiceProvider).stopTokenRefreshListener();
     });
   }
 

@@ -64,7 +64,7 @@ Performance, Simplicity, SpecFlow)
 - `docs/reviews/2026-03-07-plan-simplicity-review.md`
 - `docs/plans/2026-03-07-performance-review.md`
 - `docs/analysis/2026-03-07-spec-flow-analysis.md`
-- `docs/riverpod-codegen-migration-guide.dart`
+- `docs/riverpod-codegen-migration-guide.md`
 - `docs/flutter-flavors-best-practices.md`
 
 ---
@@ -160,16 +160,21 @@ imports across the codebase.
 
 **Acceptance criteria:**
 
-- [ ] Zero imports from `features/` in any file under `lib/shared/`
-- [ ] All existing tests pass after the move
-- [ ] `flutter analyze` passes clean
+- [x] Zero imports from `features/` in any file under `lib/shared/`
+- [x] All existing tests pass after the move
+- [x] `flutter analyze` passes clean
 
 **Ordering:** Do this BEFORE the Riverpod codegen migration (Task 1.2) to avoid
 migrating files that will move.
 
 ---
 
-### Task 1.2: Migrate to Riverpod codegen
+### Task 1.2: Migrate to Riverpod codegen ⏳ DEFERRED
+
+> **Status:** Deferred to its own branch. Riverpod 3.0 introduces breaking
+> changes (sealed `Override` type, `StreamProvider` disposal behavior,
+> `valueOrNull` removal) that cascade across 22 tests. Needs dedicated effort
+> with careful test migration. See `docs/riverpod-codegen-migration-guide.md`.
 
 **Problem:** Kit uses manual provider declarations while `riverpod_annotation`
 sits unused. No `build_runner` or `riverpod_generator` in pubspec.
@@ -324,10 +329,10 @@ flutter analyze
 
 **Acceptance criteria:**
 
-- [ ] `todos/` directory removed
-- [ ] No agent-generated analysis files in project root
-- [ ] `flutter pub get` succeeds
-- [ ] `flutter analyze` clean
+- [x] `todos/` directory removed
+- [x] No agent-generated analysis files in project root
+- [x] `flutter pub get` succeeds
+- [x] `flutter analyze` clean
 
 ---
 
@@ -439,13 +444,13 @@ be silently rejected.
 
 **Acceptance criteria:**
 
-- [ ] `android:allowBackup="false"` in AndroidManifest.xml
-- [ ] `flutter_secure_storage` in pubspec with usage guidance (no wrapper)
-- [ ] Legal URLs have debug assert warning + CI gate
-- [ ] FCM `onTokenRefresh` uses service layer with subscription lifecycle
-- [ ] Crashlytics user ID cleared on sign-out
-- [ ] Firestore rules augmented with string length limits (not replaced)
-- [ ] All tests pass
+- [x] `android:allowBackup="false"` in AndroidManifest.xml
+- [x] `flutter_secure_storage` in pubspec with usage guidance (no wrapper)
+- [x] Legal URLs have debug assert warning + CI gate
+- [x] FCM `onTokenRefresh` uses service layer with subscription lifecycle
+- [x] Crashlytics user ID cleared on sign-out
+- [x] Firestore rules augmented with string length limits (not replaced)
+- [x] All tests pass
 
 ---
 
@@ -469,10 +474,10 @@ migrate to string (`'dark'`/`'light'`). Default to `'system'` for new installs.
 
 **Acceptance criteria:**
 
-- [ ] Three theme options: System, Light, Dark
-- [ ] Default is System for new installs
-- [ ] Existing boolean values migrate without data loss
-- [ ] Tests updated for new storage format
+- [x] Three theme options: System, Light, Dark
+- [x] Default is System for new installs
+- [x] Existing boolean values migrate without data loss
+- [x] Tests updated for new storage format
 
 ---
 
@@ -518,10 +523,10 @@ debugShowCheckedModeBanner: EnvironmentConfig.current.showDebugBanner,
 
 **Acceptance criteria:**
 
-- [ ] Crashlytics only enabled in prod
-- [ ] Debug banner only shown in dev
-- [ ] Verbose logging in dev/staging, minimal in prod
-- [ ] Existing `--dart-define=ENV=dev` still works
+- [x] Crashlytics only enabled in prod
+- [x] Debug banner only shown in dev
+- [x] Verbose logging in dev/staging, minimal in prod
+- [x] Existing `--dart-define=ENV=dev` still works
 
 ---
 

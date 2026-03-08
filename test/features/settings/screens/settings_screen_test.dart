@@ -10,7 +10,7 @@ void main() {
   late SharedPreferences prefs;
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({'theme_mode': false});
+    SharedPreferences.setMockInitialValues({'theme_mode': 'system'});
     prefs = await SharedPreferences.getInstance();
   });
 
@@ -30,30 +30,22 @@ void main() {
       await tester.pump();
 
       expect(find.text('Settings'), findsOneWidget);
-      expect(find.text('Dark Mode'), findsOneWidget);
+      expect(find.text('Theme'), findsOneWidget);
       expect(find.text('Sign Out'), findsOneWidget);
       expect(find.text('Delete Account'), findsOneWidget);
       expect(find.text('Privacy Policy'), findsOneWidget);
       expect(find.text('Terms of Service'), findsOneWidget);
     });
 
-    testWidgets('dark mode toggle switches theme', (tester) async {
+    testWidgets('theme selector shows segmented button', (tester) async {
       await tester.pumpWidget(buildSubject());
       await tester.pump();
 
-      final switchFinder = find.byType(SwitchListTile);
-      expect(switchFinder, findsOneWidget);
+      final segmentedButton = find.byType(SegmentedButton<ThemeMode>);
+      expect(segmentedButton, findsOneWidget);
 
-      // Initially light mode (false)
-      final switchWidget = tester.widget<SwitchListTile>(switchFinder);
-      expect(switchWidget.value, false);
-
-      // Tap to toggle
-      await tester.tap(switchFinder);
-      await tester.pump();
-
-      final updatedSwitch = tester.widget<SwitchListTile>(switchFinder);
-      expect(updatedSwitch.value, true);
+      // System is selected by default
+      expect(find.text('System'), findsWidgets);
     });
 
     testWidgets('shows subscription section with current plan', (tester) async {

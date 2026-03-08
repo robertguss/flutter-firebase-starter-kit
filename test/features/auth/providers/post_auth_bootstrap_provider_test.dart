@@ -6,7 +6,7 @@ import 'package:flutter_starter_kit/features/auth/providers/user_profile_provide
 import 'package:flutter_starter_kit/features/auth/services/auth_service.dart';
 import 'package:flutter_starter_kit/features/auth/services/user_profile_service.dart';
 import 'package:flutter_starter_kit/shared/providers/feature_hooks.dart';
-import 'package:flutter_starter_kit/shared/providers/post_auth_bootstrap_provider.dart';
+import 'package:flutter_starter_kit/features/auth/providers/post_auth_bootstrap_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 

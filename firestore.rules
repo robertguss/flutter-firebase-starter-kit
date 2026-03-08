@@ -10,8 +10,12 @@ service cloud.firestore {
         )
         && (request.resource.data.onboardingComplete is bool)
         && (request.resource.data.get('displayName', '') is string)
+        && (request.resource.data.get('displayName', '').size() <= 100)
         && (request.resource.data.get('photoUrl', '') is string)
+        && (request.resource.data.get('email', '') is string)
+        && (request.resource.data.get('email', '').size() <= 254)
         && (request.resource.data.get('fcmToken', '') is string)
+        && (!('fcmToken' in request.resource.data) || request.resource.data.fcmToken.size() <= 500)
         && (request.resource.data.get('createdAt', request.time) is timestamp);
       }
 
