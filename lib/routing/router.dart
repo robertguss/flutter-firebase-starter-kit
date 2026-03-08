@@ -1,7 +1,9 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_starter_kit/features/auth/models/user_profile.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
@@ -14,6 +16,8 @@ import 'package:flutter_starter_kit/features/settings/screens/settings_screen.da
 import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:go_router/go_router.dart';
 
+part 'router.g.dart';
+
 // Bridges Riverpod auth state to GoRouter's refreshListenable.
 // GoRouter re-evaluates redirect when notifyListeners() fires.
 class AuthChangeNotifier extends ChangeNotifier {
@@ -22,14 +26,14 @@ class AuthChangeNotifier extends ChangeNotifier {
 
   AuthChangeNotifier(Ref ref) {
     ref.listen(authStateProvider, (_, next) {
-      final isLoggedIn = next.valueOrNull != null;
+      final isLoggedIn = next.value != null;
       if (isLoggedIn != _wasLoggedIn) {
         _wasLoggedIn = isLoggedIn;
         notifyListeners();
       }
     });
     ref.listen(userProfileProvider, (_, next) {
-      final isComplete = next.valueOrNull?.onboardingComplete;
+      final isComplete = next.value?.onboardingComplete;
       if (isComplete != _wasOnboardingComplete) {
         _wasOnboardingComplete = isComplete;
         notifyListeners();
@@ -39,9 +43,12 @@ class AuthChangeNotifier extends ChangeNotifier {
 }
 
 /// Redirect logic extracted for testability.
-/// Reads only cached provider values — never performs async/blocking calls.
-String? routerRedirect(Ref ref, String location) {
-  final user = ref.read(authStateProvider).valueOrNull;
+/// Takes resolved values — no Ref dependency, easy to unit test.
+String? routerRedirect({
+  required User? user,
+  required UserProfile? profile,
+  required String location,
+}) {
   final isLoggedIn = user != null;
   final isOnAuthPage = location == AppRoutes.auth;
   final isOnOnboardingPage = location == AppRoutes.onboarding;
@@ -56,7 +63,6 @@ String? routerRedirect(Ref ref, String location) {
 
   // Check cached profile for onboarding status
   if (isLoggedIn && !isOnOnboardingPage) {
-    final profile = ref.read(userProfileProvider).valueOrNull;
     if (profile != null && !profile.onboardingComplete) {
       return AppRoutes.onboarding;
     }
@@ -65,7 +71,8 @@ String? routerRedirect(Ref ref, String location) {
   return null;
 }
 
-final routerProvider = Provider<GoRouter>((ref) {
+@Riverpod(keepAlive: true)
+GoRouter router(Ref ref) {
   final authNotifier = AuthChangeNotifier(ref);
   ref.onDispose(() => authNotifier.dispose());
 
@@ -77,7 +84,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
     ],
     redirect: (context, state) {
-      return routerRedirect(ref, state.matchedLocation);
+      return routerRedirect(
+        user: ref.read(authStateProvider).value,
+        profile: ref.read(userProfileProvider).value,
+        location: state.matchedLocation,
+      );
     },
     routes: [
       GoRoute(
@@ -117,4 +128,4 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
-});
+}

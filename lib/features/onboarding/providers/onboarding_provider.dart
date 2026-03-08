@@ -1,10 +1,9 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final onboardingProvider = NotifierProvider<OnboardingNotifier, int>(
-  OnboardingNotifier.new,
-);
+part 'onboarding_provider.g.dart';
 
-class OnboardingNotifier extends Notifier<int> {
+@riverpod
+class Onboarding extends _$Onboarding {
   @override
   int build() => 0;
 

@@ -6,18 +6,21 @@ import 'package:flutter_test/flutter_test.dart';
 extension PumpApp on WidgetTester {
   Future<void> pumpApp(
     Widget widget, {
-    List<Override> overrides = const [],
+    ProviderContainer? container,
   }) async {
-    await pumpWidget(
-      ProviderScope(
-        overrides: overrides,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('en'),
-          home: widget,
-        ),
-      ),
+    final app = MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('en'),
+      home: widget,
     );
+
+    if (container != null) {
+      await pumpWidget(
+        UncontrolledProviderScope(container: container, child: app),
+      );
+    } else {
+      await pumpWidget(ProviderScope(child: app));
+    }
   }
 }

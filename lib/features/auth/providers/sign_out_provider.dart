@@ -1,19 +1,22 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
 import 'package:flutter_starter_kit/shared/providers/feature_hooks.dart';
 import 'package:flutter_starter_kit/features/auth/providers/post_auth_bootstrap_provider.dart';
 
+part 'sign_out_provider.g.dart';
+
 /// Encapsulates the full sign-out sequence:
 /// 1. Clear FCM token from Firestore (prevent notifications to signed-out device)
 /// 2. Run feature-specific cleanup hooks (RevenueCat logout, etc.)
 /// 3. Invalidate user-specific providers
 /// 4. Auth sign-out (triggers router redirect via refreshListenable)
-final signOutProvider = FutureProvider<void>((ref) async {
-  final user = ref.read(authStateProvider).valueOrNull;
+@riverpod
+Future<void> signOut(Ref ref) async {
+  final user = ref.read(authStateProvider).value;
   if (user == null) return;
 
   // 1. Clear FCM token from Firestore (best-effort -- don't block sign-out)
@@ -44,4 +47,4 @@ final signOutProvider = FutureProvider<void>((ref) async {
   // 5. Sign out (triggers router refresh via refreshListenable)
   // NOTE: Do NOT invalidate routerProvider. Do NOT call context.go().
   await ref.read(authServiceProvider).signOut();
-});
+}

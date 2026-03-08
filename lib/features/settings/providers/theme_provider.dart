@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_starter_kit/shared/providers/shared_preferences_provider.dart';
 
-final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
-  ThemeModeNotifier.new,
-);
+part 'theme_provider.g.dart';
 
-class ThemeModeNotifier extends Notifier<ThemeMode> {
+@Riverpod(keepAlive: true)
+class ThemeModeNotifier extends _$ThemeModeNotifier {
   static const _key = 'theme_mode';
 
   @override

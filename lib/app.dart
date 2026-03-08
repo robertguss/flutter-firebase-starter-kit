@@ -60,7 +60,7 @@ class _BootstrapGate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
-    final user = authState.valueOrNull;
+    final user = authState.value;
 
     if (user != null) {
       final bootstrap = ref.watch(postAuthBootstrapProvider);

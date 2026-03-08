@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/auth/models/user_profile.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
@@ -12,30 +13,33 @@ import '../../../helpers/mocks.dart';
 void main() {
   late MockAuthService mockAuthService;
   late MockUserProfileService mockProfileService;
-  late ProviderContainer container;
 
   setUp(() {
     mockAuthService = MockAuthService();
     mockProfileService = MockUserProfileService();
   });
 
-  tearDown(() {
-    container.dispose();
-  });
+  ProviderContainer createContainer({
+    AsyncValue<User?> authState = const AsyncValue.data(null),
+    List<FeatureHook>? bootstrapHooksList,
+  }) {
+    return ProviderContainer.test(
+      overrides: [
+        authServiceProvider.overrideWithValue(mockAuthService),
+        authStateProvider.overrideWithValue(authState),
+        userProfileServiceProvider.overrideWithValue(mockProfileService),
+        userProfileProvider.overrideWithValue(const AsyncValue.data(null)),
+        if (bootstrapHooksList != null)
+          bootstrapHooksProvider.overrideWithValue(bootstrapHooksList),
+      ],
+    );
+  }
 
   group('postAuthBootstrapProvider', () {
     test('does nothing when user is null', () async {
-      when(() => mockAuthService.authStateChanges)
-          .thenAnswer((_) => Stream.value(null));
-
-      container = ProviderContainer(
-        overrides: [
-          authServiceProvider.overrideWithValue(mockAuthService),
-          userProfileServiceProvider.overrideWithValue(mockProfileService),
-        ],
+      final container = createContainer(
+        authState: const AsyncValue.data(null),
       );
-
-      await container.read(authStateProvider.future);
       await container.read(postAuthBootstrapProvider.future);
 
       verifyNever(() => mockProfileService.createOrUpdateProfile(any(), any()));
@@ -48,21 +52,14 @@ void main() {
       when(() => mockUser.displayName).thenReturn('Test User');
       when(() => mockUser.photoURL).thenReturn(null);
       when(() => mockUser.providerData).thenReturn([]);
-      when(() => mockAuthService.authStateChanges)
-          .thenAnswer((_) => Stream.value(mockUser));
       when(() => mockProfileService.getProfile(any()))
           .thenAnswer((_) async => null);
       when(() => mockProfileService.createOrUpdateProfile(any(), any()))
           .thenAnswer((_) async {});
 
-      container = ProviderContainer(
-        overrides: [
-          authServiceProvider.overrideWithValue(mockAuthService),
-          userProfileServiceProvider.overrideWithValue(mockProfileService),
-        ],
+      final container = createContainer(
+        authState: AsyncValue.data(mockUser),
       );
-
-      await container.read(authStateProvider.future);
       await container.read(postAuthBootstrapProvider.future);
 
       verify(() => mockProfileService.createOrUpdateProfile(
@@ -81,8 +78,6 @@ void main() {
       when(() => mockUser.displayName).thenReturn('New Name');
       when(() => mockUser.photoURL).thenReturn(null);
       when(() => mockUser.providerData).thenReturn([]);
-      when(() => mockAuthService.authStateChanges)
-          .thenAnswer((_) => Stream.value(mockUser));
       when(() => mockProfileService.getProfile(any()))
           .thenAnswer((_) async => UserProfile(
                 uid: 'uid-1',
@@ -92,17 +87,11 @@ void main() {
       when(() => mockProfileService.createOrUpdateProfile(any(), any()))
           .thenAnswer((_) async {});
 
-      container = ProviderContainer(
-        overrides: [
-          authServiceProvider.overrideWithValue(mockAuthService),
-          userProfileServiceProvider.overrideWithValue(mockProfileService),
-        ],
+      final container = createContainer(
+        authState: AsyncValue.data(mockUser),
       );
-
-      await container.read(authStateProvider.future);
       await container.read(postAuthBootstrapProvider.future);
 
-      // Should NOT include createdAt or onboardingComplete for returning users
       verify(() => mockProfileService.createOrUpdateProfile(
             'uid-1',
             any(that: isNot(contains('createdAt'))),
@@ -116,28 +105,21 @@ void main() {
       when(() => mockUser.displayName).thenReturn('Test');
       when(() => mockUser.photoURL).thenReturn(null);
       when(() => mockUser.providerData).thenReturn([]);
-      when(() => mockAuthService.authStateChanges)
-          .thenAnswer((_) => Stream.value(mockUser));
       when(() => mockProfileService.getProfile(any()))
           .thenAnswer((_) async => null);
       when(() => mockProfileService.createOrUpdateProfile(any(), any()))
           .thenAnswer((_) async {});
 
       var hookCalled = false;
-      container = ProviderContainer(
-        overrides: [
-          authServiceProvider.overrideWithValue(mockAuthService),
-          userProfileServiceProvider.overrideWithValue(mockProfileService),
-          bootstrapHooksProvider.overrideWithValue([
-            (ref, uid) async {
-              hookCalled = true;
-              expect(uid, 'uid-1');
-            },
-          ]),
+      final container = createContainer(
+        authState: AsyncValue.data(mockUser),
+        bootstrapHooksList: [
+          (ref, uid) async {
+            hookCalled = true;
+            expect(uid, 'uid-1');
+          },
         ],
       );
-
-      await container.read(authStateProvider.future);
       await container.read(postAuthBootstrapProvider.future);
 
       expect(hookCalled, true);

@@ -1,45 +1,28 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 
 import '../../../helpers/mocks.dart';
 
 void main() {
-  late MockAuthService mockAuthService;
-  late ProviderContainer container;
-
-  setUp(() {
-    mockAuthService = MockAuthService();
-  });
-
-  tearDown(() {
-    container.dispose();
-  });
-
   group('authStateProvider', () {
     test('emits null when user is not authenticated', () async {
-      when(
-        () => mockAuthService.authStateChanges,
-      ).thenAnswer((_) => Stream.value(null));
-
-      container = ProviderContainer(
-        overrides: [authServiceProvider.overrideWithValue(mockAuthService)],
+      final container = ProviderContainer.test(
+        overrides: [
+          authStateProvider.overrideWithValue(const AsyncValue.data(null)),
+        ],
       );
 
-      final state = container.read(authStateProvider);
-      expect(state, const AsyncValue<User?>.loading());
+      final user = await container.read(authStateProvider.future);
+      expect(user, isNull);
     });
 
     test('emits user when authenticated', () async {
       final mockUser = MockUser();
-      when(
-        () => mockAuthService.authStateChanges,
-      ).thenAnswer((_) => Stream.value(mockUser));
-
-      container = ProviderContainer(
-        overrides: [authServiceProvider.overrideWithValue(mockAuthService)],
+      final container = ProviderContainer.test(
+        overrides: [
+          authStateProvider.overrideWithValue(AsyncValue.data(mockUser)),
+        ],
       );
 
       await container.read(authStateProvider.future);

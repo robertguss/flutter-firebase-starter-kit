@@ -1,9 +1,12 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_starter_kit/shared/providers/shared_preferences_provider.dart';
+
+part 'notification_preference_provider.g.dart';
 
 const _notificationsEnabledKey = 'notifications_enabled';
 
-class NotificationPreferenceNotifier extends Notifier<bool> {
+@riverpod
+class NotificationPreference extends _$NotificationPreference {
   @override
   bool build() {
     final prefs = ref.watch(sharedPreferencesProvider);
@@ -16,8 +19,3 @@ class NotificationPreferenceNotifier extends Notifier<bool> {
     state = enabled;
   }
 }
-
-final notificationPreferenceProvider =
-    NotifierProvider<NotificationPreferenceNotifier, bool>(
-  NotificationPreferenceNotifier.new,
-);

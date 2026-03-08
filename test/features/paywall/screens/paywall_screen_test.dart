@@ -24,7 +24,7 @@ void main() {
     when(() => mockEntitlements.active).thenReturn({});
   });
 
-  Widget createApp({required List<Override> overrides}) {
+  Widget createApp({required ProviderContainer container}) {
     final router = GoRouter(
       initialLocation: '/paywall',
       routes: [
@@ -33,8 +33,8 @@ void main() {
       ],
     );
 
-    return ProviderScope(
-      overrides: overrides,
+    return UncontrolledProviderScope(
+      container: container,
       child: MaterialApp.router(
         routerConfig: router,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -59,15 +59,15 @@ void main() {
       final mockOfferings = MockOfferings();
       when(() => mockOfferings.current).thenReturn(null);
 
-      await tester.pumpWidget(
-        createApp(
-          overrides: [
-            purchasesServiceProvider.overrideWithValue(mockService),
-            offeringsProvider.overrideWith((ref) => mockOfferings),
-            customerInfoProvider.overrideWith((ref) async => mockCustomerInfo),
-          ],
-        ),
+      final container = ProviderContainer(
+        overrides: [
+          purchasesServiceProvider.overrideWithValue(mockService),
+          offeringsProvider.overrideWith((ref) => mockOfferings),
+          customerInfoProvider.overrideWith((ref) async => mockCustomerInfo),
+        ],
       );
+
+      await tester.pumpWidget(createApp(container: container));
       await tester.pumpAndSettle();
 
       // Tap restore purchases
@@ -80,6 +80,8 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('internal RevenueCat details'), findsNothing);
+
+      container.dispose();
     });
 
     testWidgets('restore does not expose error.toString()', (tester) async {
@@ -90,15 +92,15 @@ void main() {
       final mockOfferings = MockOfferings();
       when(() => mockOfferings.current).thenReturn(null);
 
-      await tester.pumpWidget(
-        createApp(
-          overrides: [
-            purchasesServiceProvider.overrideWithValue(mockService),
-            offeringsProvider.overrideWith((ref) => mockOfferings),
-            customerInfoProvider.overrideWith((ref) async => mockCustomerInfo),
-          ],
-        ),
+      final container = ProviderContainer(
+        overrides: [
+          purchasesServiceProvider.overrideWithValue(mockService),
+          offeringsProvider.overrideWith((ref) => mockOfferings),
+          customerInfoProvider.overrideWith((ref) async => mockCustomerInfo),
+        ],
       );
+
+      await tester.pumpWidget(createApp(container: container));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Restore Purchases'));
@@ -109,6 +111,8 @@ void main() {
         find.text('Something went wrong. Please try again.'),
         findsOneWidget,
       );
+
+      container.dispose();
     });
   });
 }
