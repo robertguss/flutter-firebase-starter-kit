@@ -1,13 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
-import 'package:flutter_starter_kit/features/auth/services/auth_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockAuthService extends Mock implements AuthService {}
-
-class MockUser extends Mock implements User {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   late MockAuthService mockAuthService;

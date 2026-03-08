@@ -1,13 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_starter_kit/features/auth/services/user_profile_service.dart';
 import 'package:flutter_starter_kit/features/notifications/services/fcm_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockFirebaseMessaging extends Mock implements FirebaseMessaging {}
-
-class MockUserProfileService extends Mock implements UserProfileService {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   late MockFirebaseMessaging mockMessaging;
