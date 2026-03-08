@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_starter_kit/shared/providers/premium_provider.dart';
 import 'package:flutter_starter_kit/features/settings/screens/settings_screen.dart';
 import 'package:flutter_starter_kit/shared/providers/shared_preferences_provider.dart';
@@ -20,7 +21,12 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(prefs),
         isPremiumProvider.overrideWithValue(isPremium),
       ],
-      child: const MaterialApp(home: SettingsScreen()),
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: Locale('en'),
+        home: SettingsScreen(),
+      ),
     );
   }
 

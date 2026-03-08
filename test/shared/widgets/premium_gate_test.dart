@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_starter_kit/shared/providers/premium_provider.dart';
 import 'package:flutter_starter_kit/features/paywall/widgets/premium_gate.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +10,9 @@ void main() {
     return ProviderScope(
       overrides: [isPremiumProvider.overrideWithValue(isPremium)],
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
         home: Scaffold(
           body: PremiumGate(
             lockedWidget: lockedWidget,

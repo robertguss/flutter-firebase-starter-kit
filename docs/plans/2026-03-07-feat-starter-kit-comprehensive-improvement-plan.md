@@ -124,9 +124,13 @@ provider declaration syntax but not the architecture.
 
 ---
 
-## Phase 1: Foundation Integrity (v1.1)
+## Phase 1: Foundation Integrity (v1.1) ✅ COMPLETE
 
 _Goal: After this phase, the kit is architecturally honest and sound._
+
+> **Status:** Phase 1 complete as of 2026-03-07. Tasks 1.1, 1.3–1.6 shipped in
+> PR #6. Task 1.2 (Riverpod codegen) remains deferred — will migrate directly to
+> Riverpod 3.0 when stable to avoid a double migration.
 
 ### Task 1.1: Fix shared/ importing from features/auth/
 
@@ -583,11 +587,11 @@ clean: ## Clean build artifacts
 
 **Acceptance criteria:**
 
-- [ ] `make setup` runs full setup flow
-- [ ] `make test` runs all tests
-- [ ] `make build-runner` generates codegen files
-- [ ] `make watch` runs build_runner in watch mode
-- [ ] All commands documented with `## comments` (visible via `make help`
+- [x] `make setup` runs full setup flow
+- [x] `make test` runs all tests
+- [x] `make build-runner` generates codegen files
+- [x] `make watch` runs build_runner in watch mode
+- [x] All commands documented with `## comments` (visible via `make help`
       pattern)
 
 ---
@@ -606,9 +610,9 @@ Reframe the setup narrative:
 
 **Acceptance criteria:**
 
-- [ ] README accurately describes all setup steps
-- [ ] No false simplicity claims
-- [ ] Quick Start section with copy-pasteable commands
+- [x] README accurately describes all setup steps
+- [x] No false simplicity claims
+- [x] Quick Start section with copy-pasteable commands
 
 ---
 
@@ -644,7 +648,7 @@ Three sections, one per removable feature:
 
 **Acceptance criteria:**
 
-- [ ] Each feature has a step-by-step removal checklist
+- [x] Each feature has a step-by-step removal checklist
 - [ ] Following the checklist results in a compiling, test-passing app
 - [ ] Verified by actually performing each removal on a branch (test in CI or
       manually)
@@ -668,9 +672,9 @@ Add:
 
 **Acceptance criteria:**
 
-- [ ] AI assistants can discover docs/ guides
-- [ ] Build runner commands documented
-- [ ] Architectural rules explicit
+- [x] AI assistants can discover docs/ guides
+- [x] Build runner commands documented
+- [x] Architectural rules explicit
 
 ---
 
@@ -774,15 +778,15 @@ developers who don't need flavors yet.
 
 **Acceptance criteria:**
 
-- [ ] `flutter run --flavor dev -t lib/main_dev.dart` launches with `.dev`
+- [x] `flutter run --flavor dev -t lib/main_dev.dart` launches with `.dev`
       suffix
-- [ ] `flutter run --flavor prod -t lib/main_prod.dart` launches with production
+- [x] `flutter run --flavor prod -t lib/main_prod.dart` launches with production
       bundle ID
 - [ ] Each flavor uses its own Firebase config
-- [ ] App name differs per flavor
-- [ ] Environment is set via entry point, not `String.fromEnvironment`
-- [ ] `--dart-define=ENV=` still works as fallback in `main.dart`
-- [ ] CLAUDE.md and Makefile updated with flavor commands
+- [x] App name differs per flavor
+- [x] Environment is set via entry point, not `String.fromEnvironment`
+- [x] `--dart-define=ENV=` still works as fallback in `main.dart`
+- [x] CLAUDE.md and Makefile updated with flavor commands
 - [ ] iOS schemes marked as "Shared"
 
 **Edge cases:**
@@ -848,12 +852,12 @@ Text(AppLocalizations.of(context)!.signInPrompt)
 
 **Acceptance criteria:**
 
-- [ ] `flutter gen-l10n` generates localization files
-- [ ] All user-facing strings extracted to `app_en.arb`
-- [ ] Widgets use `AppLocalizations.of(context)` for strings
+- [x] `flutter gen-l10n` generates localization files
+- [x] All user-facing strings extracted to `app_en.arb`
+- [x] Widgets use `AppLocalizations.of(context)` for strings
 - [ ] Adding a new locale is documented (create `app_XX.arb`, add locale to
       supported list)
-- [ ] Dynamic strings with interpolation handled correctly (e.g., "Hello,
+- [x] Dynamic strings with interpolation handled correctly (e.g., "Hello,
       {name}")
 
 **Edge cases:**
@@ -894,9 +898,9 @@ jobs:
 
 **Acceptance criteria:**
 
-- [ ] CI runs on PR and push to main
-- [ ] Runs analyze + test
-- [ ] Uses current Flutter stable version
+- [x] CI runs on PR and push to main
+- [x] Runs analyze + test
+- [x] Uses current Flutter stable version
 - [ ] Build runner step included for codegen
 
 ---

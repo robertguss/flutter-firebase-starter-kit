@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/delete_account_provider.dart';
@@ -27,24 +28,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final isPremium = ref.watch(isPremiumProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
         children: [
           SettingsSection(
-            title: 'Appearance',
+            title: l10n.appearance,
             children: [
               ListTile(
-                title: const Text('Theme'),
+                title: Text(l10n.theme),
                 subtitle: Text(switch (themeMode) {
-                  ThemeMode.system => 'System',
-                  ThemeMode.light => 'Light',
-                  ThemeMode.dark => 'Dark',
+                  ThemeMode.system => l10n.themeSystem,
+                  ThemeMode.light => l10n.themeLight,
+                  ThemeMode.dark => l10n.themeDark,
                 }),
                 trailing: SegmentedButton<ThemeMode>(
-                  segments: const [
-                    ButtonSegment(value: ThemeMode.system, label: Text('System')),
+                  segments: [
+                    ButtonSegment(value: ThemeMode.system, label: Text(l10n.themeSystem)),
                     ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode)),
                     ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode)),
                   ],
@@ -58,17 +60,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           if (AppConfig.enablePaywall)
             SettingsSection(
-              title: 'Subscription',
+              title: l10n.subscription,
               children: [
                 ListTile(
-                  title: const Text('Current Plan'),
-                  subtitle: Text(isPremium ? 'Premium' : 'Free'),
-                  trailing: isPremium ? null : const Icon(Icons.chevron_right, semanticLabel: 'View plans'),
+                  title: Text(l10n.currentPlan),
+                  subtitle: Text(isPremium ? l10n.premium : l10n.free),
+                  trailing: isPremium ? null : Icon(Icons.chevron_right, semanticLabel: l10n.viewPlans),
                   onTap:
                       isPremium ? null : () => context.push(AppRoutes.paywall),
                 ),
                 ListTile(
-                  title: const Text('Restore Purchases'),
+                  title: Text(l10n.restorePurchases),
                   onTap: () async {
                     final restoreAction = ref.read(restorePurchasesActionProvider);
                     if (restoreAction == null) return;
@@ -82,10 +84,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     } catch (_) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Something went wrong. Please try again.',
-                            ),
+                          SnackBar(
+                            content: Text(l10n.genericError),
                           ),
                         );
                       }
@@ -95,32 +95,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
           SettingsSection(
-            title: 'About',
+            title: l10n.about,
             children: [
               ListTile(
-                title: const Text('Privacy Policy'),
-                trailing: const Icon(Icons.open_in_new, semanticLabel: 'Opens in browser'),
+                title: Text(l10n.privacyPolicy),
+                trailing: Icon(Icons.open_in_new, semanticLabel: l10n.opensInBrowser),
                 onTap: () => launchUrl(Uri.parse(AppConfig.privacyPolicyUrl)),
               ),
               ListTile(
-                title: const Text('Terms of Service'),
-                trailing: const Icon(Icons.open_in_new, semanticLabel: 'Opens in browser'),
+                title: Text(l10n.termsOfService),
+                trailing: Icon(Icons.open_in_new, semanticLabel: l10n.opensInBrowser),
                 onTap: () => launchUrl(Uri.parse(AppConfig.termsOfServiceUrl)),
               ),
             ],
           ),
           SettingsSection(
-            title: 'Account',
+            title: l10n.account,
             children: [
               ListTile(
-                title: const Text('Sign Out'),
+                title: Text(l10n.signOut),
                 onTap: () async {
                   await ref.read(signOutProvider.future);
                 },
               ),
               ListTile(
                 title: Text(
-                  'Delete Account',
+                  l10n.deleteAccount,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
                 trailing: _isDeleting
@@ -139,7 +139,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 data: (info) => Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    'Version ${info.version} (${info.buildNumber})',
+                    l10n.versionInfo(info.version, info.buildNumber),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -156,18 +156,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showDeleteConfirmation(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog<void>(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Delete Account'),
-            content: const Text(
-              'This will permanently delete your account and all data. This action cannot be undone.',
-            ),
+            title: Text(l10n.deleteAccount),
+            content: Text(l10n.deleteAccountConfirmation),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancel),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
@@ -177,7 +176,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Navigator.pop(context);
                   _deleteAccount();
                 },
-                child: const Text('Delete'),
+                child: Text(l10n.delete),
               ),
             ],
           ),
@@ -185,6 +184,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _deleteAccount() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isDeleting = true);
     // Invalidate to clear any cached error from a previous attempt
     ref.invalidate(deleteAccountProvider);
@@ -193,8 +193,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         final message = switch (e.code) {
-          'requires-recent-login' => 'Please sign in again to continue.',
-          _ => 'Authentication error. Please try again.',
+          'requires-recent-login' => l10n.requiresRecentLogin,
+          _ => l10n.authenticationError,
         };
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message)),
@@ -203,8 +203,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Something went wrong. Please try again.'),
+          SnackBar(
+            content: Text(l10n.genericError),
           ),
         );
       }

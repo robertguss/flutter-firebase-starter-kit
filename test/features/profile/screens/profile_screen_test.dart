@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/auth/models/user_profile.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
 import 'package:flutter_starter_kit/features/profile/screens/profile_screen.dart';
+import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -22,7 +23,12 @@ void main() {
               (ref) => Stream.value(profile),
             ),
           ],
-          child: const MaterialApp(home: ProfileScreen()),
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: Locale('en'),
+            home: ProfileScreen(),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -39,7 +45,12 @@ void main() {
               (ref) => const Stream.empty(),
             ),
           ],
-          child: const MaterialApp(home: ProfileScreen()),
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: Locale('en'),
+            home: ProfileScreen(),
+          ),
         ),
       );
 

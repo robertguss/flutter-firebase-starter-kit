@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/shared/providers/premium_provider.dart';
 import 'package:flutter_starter_kit/routing/routes.dart';
@@ -17,18 +18,19 @@ class PremiumGate extends ConsumerWidget {
       return child;
     }
 
+    final l10n = AppLocalizations.of(context)!;
     return lockedWidget ??
         Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.lock, size: 48, semanticLabel: 'Premium feature locked'),
+              Icon(Icons.lock, size: 48, semanticLabel: l10n.premiumFeatureLocked),
               const SizedBox(height: 16),
-              const Text('Premium Feature'),
+              Text(l10n.premiumFeature),
               const SizedBox(height: 8),
               FilledButton(
                 onPressed: () => context.push(AppRoutes.paywall),
-                child: const Text('Upgrade'),
+                child: Text(l10n.upgrade),
               ),
             ],
           ),

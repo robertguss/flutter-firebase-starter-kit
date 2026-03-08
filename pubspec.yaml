@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # State & Navigation
   flutter_riverpod: ^2.6.1
@@ -49,4 +51,5 @@ dev_dependencies:
   fake_cloud_firestore: ^3.1.0
 
 flutter:
+  generate: true
   uses-material-design: true
