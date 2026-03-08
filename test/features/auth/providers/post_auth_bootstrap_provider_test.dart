@@ -1,9 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/auth/models/user_profile.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
-import 'package:flutter_starter_kit/features/auth/services/user_profile_service.dart';
 import 'package:flutter_starter_kit/shared/providers/feature_hooks.dart';
 import 'package:flutter_starter_kit/features/auth/providers/post_auth_bootstrap_provider.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/notifications/providers/notification_provider.dart';
 import 'package:flutter_starter_kit/features/notifications/services/fcm_service.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 
 import '../../../helpers/mocks.dart';
 

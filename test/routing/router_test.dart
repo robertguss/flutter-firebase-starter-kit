@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
-import 'package:flutter_starter_kit/features/auth/services/auth_service.dart';
 import 'package:flutter_starter_kit/routing/router.dart';
 import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:flutter_starter_kit/shared/providers/shared_preferences_provider.dart';
