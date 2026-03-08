@@ -12,6 +12,7 @@ service cloud.firestore {
         && (request.resource.data.get('displayName', '') is string)
         && (request.resource.data.get('displayName', '').size() <= 100)
         && (request.resource.data.get('photoUrl', '') is string)
+        && (!('photoUrl' in request.resource.data) || request.resource.data.photoUrl.size() <= 1000)
         && (request.resource.data.get('email', '') is string)
         && (request.resource.data.get('email', '').size() <= 254)
         && (request.resource.data.get('fcmToken', '') is string)

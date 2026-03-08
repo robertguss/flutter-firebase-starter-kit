@@ -1,9 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_starter_kit/features/auth/services/auth_service.dart';
 import 'package:flutter_starter_kit/features/auth/services/user_profile_service.dart';
 import 'package:flutter_starter_kit/features/paywall/services/purchases_service.dart';
+import 'package:flutter_starter_kit/features/profile/services/profile_storage_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
@@ -42,6 +45,13 @@ class MockOffering extends Mock implements Offering {}
 class MockPackage extends Mock implements Package {}
 
 class MockStoreProduct extends Mock implements StoreProduct {}
+
+// Profile Storage
+class MockProfileStorageService extends Mock implements ProfileStorageService {}
+
+class MockFirebaseStorage extends Mock implements FirebaseStorage {}
+
+class MockImagePicker extends Mock implements ImagePicker {}
 
 // Notifications
 class MockFirebaseMessaging extends Mock implements FirebaseMessaging {}

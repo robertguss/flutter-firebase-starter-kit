@@ -31,16 +31,23 @@ void main() {
   }
 
   group('SettingsScreen', () {
-    testWidgets('renders all required sections', (tester) async {
+    testWidgets('renders appearance and about sections', (tester) async {
       await tester.pumpWidget(buildSubject());
       await tester.pump();
 
       expect(find.text('Settings'), findsOneWidget);
       expect(find.text('Theme'), findsOneWidget);
-      expect(find.text('Sign Out'), findsOneWidget);
-      expect(find.text('Delete Account'), findsOneWidget);
       expect(find.text('Privacy Policy'), findsOneWidget);
       expect(find.text('Terms of Service'), findsOneWidget);
+    });
+
+    testWidgets('does not show account section (moved to profile)',
+        (tester) async {
+      await tester.pumpWidget(buildSubject());
+      await tester.pump();
+
+      expect(find.text('Sign Out'), findsNothing);
+      expect(find.text('Delete Account'), findsNothing);
     });
 
     testWidgets('theme selector shows segmented button', (tester) async {
@@ -67,21 +74,6 @@ void main() {
       await tester.pump();
 
       expect(find.text('Premium'), findsOneWidget);
-    });
-
-    testWidgets('delete account shows confirmation dialog', (tester) async {
-      await tester.pumpWidget(buildSubject());
-      await tester.pump();
-
-      // Scroll to make Delete Account visible, then tap
-      await tester.scrollUntilVisible(find.text('Delete Account'), 100);
-      await tester.pump();
-      await tester.tap(find.text('Delete Account'));
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
-
-      expect(find.text('Cancel'), findsOneWidget);
-      expect(find.widgetWithText(FilledButton, 'Delete'), findsOneWidget);
     });
   });
 }

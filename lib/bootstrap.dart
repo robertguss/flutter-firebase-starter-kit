@@ -25,10 +25,17 @@ Future<void> bootstrap([Environment? env]) async {
   // Initialize Firebase first (required by Crashlytics)
   await FirebaseService.initialize();
 
-  // Set up Crashlytics error handlers AFTER Firebase init, BEFORE runApp
+  // Pre-initialize SharedPreferences for synchronous access (no theme flash)
+  final prefs = await SharedPreferences.getInstance();
+
+  // Set up Crashlytics error handlers AFTER Firebase init, BEFORE runApp.
+  // Collection starts DISABLED — enabled only after user consent.
+  // TODO: Customize consent flow for your jurisdiction (GDPR, CCPA, etc.)
   if (AppConfig.enableCrashlytics &&
       EnvironmentConfig.current.enableCrashlytics) {
-    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+    final hasConsent = prefs.getBool('analytics_consent') ?? false;
+    await FirebaseCrashlytics.instance
+        .setCrashlyticsCollectionEnabled(hasConsent);
 
     FlutterError.onError = (details) {
       FlutterError.presentError(details);
@@ -40,9 +47,6 @@ Future<void> bootstrap([Environment? env]) async {
       return true;
     };
   }
-
-  // Pre-initialize SharedPreferences for synchronous access (no theme flash)
-  final prefs = await SharedPreferences.getInstance();
 
   // Parallelize remaining initialization for faster startup
   await Future.wait([

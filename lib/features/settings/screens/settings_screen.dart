@@ -1,10 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
-import 'package:flutter_starter_kit/features/auth/providers/delete_account_provider.dart';
-import 'package:flutter_starter_kit/features/auth/providers/sign_out_provider.dart';
 import 'package:flutter_starter_kit/shared/providers/feature_hooks.dart';
 import 'package:flutter_starter_kit/shared/providers/premium_provider.dart';
 import 'package:flutter_starter_kit/features/settings/providers/package_info_provider.dart';
@@ -14,18 +11,11 @@ import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class SettingsScreen extends ConsumerStatefulWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _isDeleting = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final isPremium = ref.watch(isPremiumProvider);
     final l10n = AppLocalizations.of(context)!;
@@ -109,31 +99,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ],
           ),
-          SettingsSection(
-            title: l10n.account,
-            children: [
-              ListTile(
-                title: Text(l10n.signOut),
-                onTap: () async {
-                  await ref.read(signOutProvider.future);
-                },
-              ),
-              ListTile(
-                title: Text(
-                  l10n.deleteAccount,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-                trailing: _isDeleting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : null,
-                onTap: _isDeleting ? null : () => _showDeleteConfirmation(context),
-              ),
-            ],
-          ),
           const SizedBox(height: 24),
           ref.watch(packageInfoProvider).when(
                 data: (info) => Padding(
@@ -153,63 +118,5 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
     );
-  }
-
-  void _showDeleteConfirmation(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog<void>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(l10n.deleteAccount),
-            content: Text(l10n.deleteAccountConfirmation),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(l10n.cancel),
-              ),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                  _deleteAccount();
-                },
-                child: Text(l10n.delete),
-              ),
-            ],
-          ),
-    );
-  }
-
-  Future<void> _deleteAccount() async {
-    final l10n = AppLocalizations.of(context)!;
-    setState(() => _isDeleting = true);
-    // Invalidate to clear any cached error from a previous attempt
-    ref.invalidate(deleteAccountProvider);
-    try {
-      await ref.read(deleteAccountProvider.future);
-    } on FirebaseAuthException catch (e) {
-      if (mounted) {
-        final message = switch (e.code) {
-          'requires-recent-login' => l10n.requiresRecentLogin,
-          _ => l10n.authenticationError,
-        };
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.genericError),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isDeleting = false);
-    }
   }
 }

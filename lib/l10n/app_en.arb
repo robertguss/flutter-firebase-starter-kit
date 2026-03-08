@@ -75,5 +75,22 @@
   "retry": "Retry",
   "errorSemanticLabel": "Error",
   "premiumFeature": "Premium Feature",
-  "premiumFeatureLocked": "Premium feature locked"
+  "premiumFeatureLocked": "Premium feature locked",
+
+  "profile": "Profile",
+  "editDisplayName": "Edit display name",
+  "displayName": "Display Name",
+  "save": "Save",
+  "chooseFromGallery": "Choose from Gallery",
+  "takePhoto": "Take Photo",
+  "avatarUpdated": "Avatar updated",
+  "avatarUpdateFailed": "Failed to update avatar",
+  "displayNameUpdated": "Display name updated",
+  "displayNameUpdateFailed": "Failed to update display name",
+  "noProfileData": "No profile data",
+
+  "analyticsConsent": "Help Improve This App",
+  "analyticsConsentDescription": "Allow anonymous crash reports and usage analytics to help us improve the app experience.",
+  "accept": "Accept",
+  "decline": "Decline"
 }

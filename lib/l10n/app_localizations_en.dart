@@ -194,4 +194,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumFeatureLocked => 'Premium feature locked';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get editDisplayName => 'Edit display name';
+
+  @override
+  String get displayName => 'Display Name';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get chooseFromGallery => 'Choose from Gallery';
+
+  @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get avatarUpdated => 'Avatar updated';
+
+  @override
+  String get avatarUpdateFailed => 'Failed to update avatar';
+
+  @override
+  String get displayNameUpdated => 'Display name updated';
+
+  @override
+  String get displayNameUpdateFailed => 'Failed to update display name';
+
+  @override
+  String get noProfileData => 'No profile data';
+
+  @override
+  String get analyticsConsent => 'Help Improve This App';
+
+  @override
+  String get analyticsConsentDescription =>
+      'Allow anonymous crash reports and usage analytics to help us improve the app experience.';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get decline => 'Decline';
 }

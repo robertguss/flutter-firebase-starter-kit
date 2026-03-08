@@ -38,6 +38,16 @@ class UserProfileService {
     await _users.doc(uid).update({'fcmToken': token});
   }
 
+  Future<void> updateDisplayName(String uid, String displayName) async {
+    await _users.doc(uid).update({'displayName': displayName});
+  }
+
+  Future<void> updateAvatarUrl(String uid, String? photoUrl) async {
+    await _users.doc(uid).update({
+      'photoUrl': photoUrl ?? FieldValue.delete(),
+    });
+  }
+
   Future<void> clearFcmToken(String uid) async {
     await _users.doc(uid).update({'fcmToken': FieldValue.delete()});
   }

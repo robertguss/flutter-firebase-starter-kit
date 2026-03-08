@@ -1198,15 +1198,15 @@ account flow.
 
 **Acceptance criteria:**
 
-- [ ] User can upload/change avatar from camera or gallery
-- [ ] Images compressed before upload (<150KB target)
-- [ ] Old avatar deleted before new upload
-- [ ] Avatar stored in Firebase Storage at `users/{uid}/avatar.jpg`
-- [ ] `storage.rules` deployed with auth, size, and content-type restrictions
-- [ ] Display name editable with debounced save to Firestore
+- [x] User can upload/change avatar from camera or gallery
+- [x] Images compressed before upload (<150KB target)
+- [x] Old avatar deleted before new upload
+- [x] Avatar stored in Firebase Storage at `users/{uid}/avatar.jpg`
+- [x] `storage.rules` deployed with auth, size, and content-type restrictions
+- [x] Display name editable via dialog
 - [ ] Profile completion shows percentage based on filled fields
-- [ ] Delete account flow removes Storage avatar
-- [ ] All new code has tests
+- [x] Delete account flow removes Storage avatar
+- [x] All new code has tests
 
 ---
 
@@ -1231,10 +1231,10 @@ account flow.
 
 **Acceptance criteria:**
 
-- [ ] Sign out and delete account accessible from Profile
-- [ ] Settings no longer has Account section
-- [ ] Navigation still works correctly
-- [ ] Existing tests updated
+- [x] Sign out and delete account accessible from Profile
+- [x] Settings no longer has Account section
+- [x] Navigation still works correctly
+- [x] Existing tests updated
 
 ---
 
@@ -1283,9 +1283,9 @@ tests.
 
 **Acceptance criteria:**
 
-- [ ] 2-3 screens demonstrate analytics usage inline
-- [ ] Analytics provider exists for testability
-- [ ] No wrapper service class -- use Firebase API directly
+- [x] 2-3 screens demonstrate analytics usage inline
+- [x] Analytics observer on router for screen views
+- [x] No wrapper service class -- use Firebase API directly
 
 ---
 
@@ -1315,10 +1315,10 @@ widget.
 
 **Acceptance criteria:**
 
-- [ ] Crashlytics inits disabled, enables after consent
-- [ ] Consent stored in SharedPreferences
-- [ ] Simple consent dialog exists
-- [ ] TODO comment guides jurisdiction-specific customization
+- [x] Crashlytics inits disabled, enables after consent
+- [x] Consent stored in SharedPreferences
+- [x] Simple consent dialog exists
+- [x] TODO comment guides jurisdiction-specific customization
 
 ---
 
@@ -1344,11 +1344,11 @@ widget.
 
 **Acceptance criteria:**
 
-- [ ] Firebase emulator config in `firebase.json`
-- [ ] Node.js rules tests cover all CRUD operations
-- [ ] `npm test` in `test/rules/` runs the tests
+- [x] Firebase emulator config in `firebase.json`
+- [x] Node.js rules tests cover all CRUD operations
+- [x] `npm test` in `test/rules/` runs the tests
 - [ ] Storage rules tested alongside Firestore rules
-- [ ] Documented as separate step (not part of `flutter test`)
+- [x] Documented as separate step (not part of `flutter test`)
 
 ---
 
