@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_starter_kit/shared/widgets/analytics_consent_dialog.dart';
 import 'package:go_router/go_router.dart';
 
 class HomeShell extends StatelessWidget {
@@ -30,11 +31,25 @@ class HomeShell extends StatelessWidget {
   }
 }
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Show analytics consent dialog once after first sign-in
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showAnalyticsConsentIfNeeded(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Text(l10n.homeScreenPlaceholder),

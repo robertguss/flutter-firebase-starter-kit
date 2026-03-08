@@ -447,6 +447,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Premium feature locked'**
   String get premiumFeatureLocked;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @editDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit display name'**
+  String get editDisplayName;
+
+  /// No description provided for @displayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Display Name'**
+  String get displayName;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Gallery'**
+  String get chooseFromGallery;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get takePhoto;
+
+  /// No description provided for @avatarUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar updated'**
+  String get avatarUpdated;
+
+  /// No description provided for @avatarUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update avatar'**
+  String get avatarUpdateFailed;
+
+  /// No description provided for @displayNameUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name updated'**
+  String get displayNameUpdated;
+
+  /// No description provided for @displayNameUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update display name'**
+  String get displayNameUpdateFailed;
+
+  /// No description provided for @noProfileData.
+  ///
+  /// In en, this message translates to:
+  /// **'No profile data'**
+  String get noProfileData;
+
+  /// No description provided for @analyticsConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Help Improve This App'**
+  String get analyticsConsent;
+
+  /// No description provided for @analyticsConsentDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow anonymous crash reports and usage analytics to help us improve the app experience.'**
+  String get analyticsConsentDescription;
+
+  /// No description provided for @accept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get accept;
+
+  /// No description provided for @decline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get decline;
 }
 
 class _AppLocalizationsDelegate
