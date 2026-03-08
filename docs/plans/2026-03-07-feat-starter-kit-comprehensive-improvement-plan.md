@@ -934,8 +934,8 @@ _Goal: After this phase, the test suite inspires confidence, not doubt._
 
 **Acceptance criteria:**
 
-- [ ] No test file exists that only tests mock framework behavior
-- [ ] `flutter test` still passes
+- [x] No test file exists that only tests mock framework behavior
+- [x] `flutter test` still passes
 
 ---
 
@@ -968,10 +968,10 @@ test('redirects to /onboarding when onboarding not complete', () {
 
 **Acceptance criteria:**
 
-- [ ] Router redirect tests invoke the actual redirect logic
-- [ ] Tests cover: unauth -> /auth, auth on /auth -> /home, onboarding
+- [x] Router redirect tests invoke the actual redirect logic
+- [x] Tests cover: unauth -> /auth, auth on /auth -> /home, onboarding
       incomplete -> /onboarding
-- [ ] Tests pass
+- [x] Tests pass
 
 ---
 
@@ -1037,11 +1037,11 @@ declarations from individual test files.
 
 **Acceptance criteria:**
 
-- [ ] `test/helpers/mocks.dart` contains all shared mock classes
-- [ ] `test/helpers/pump_app.dart` provides `pumpApp` helper
-- [ ] `test/helpers/fixtures.dart` provides test data factories
-- [ ] No duplicate mock class declarations across test files
-- [ ] All tests pass after migration
+- [x] `test/helpers/mocks.dart` contains all shared mock classes
+- [x] `test/helpers/pump_app.dart` provides `pumpApp` helper
+- [x] `test/helpers/fixtures.dart` provides test data factories
+- [x] No duplicate mock class declarations across test files
+- [x] All tests pass after migration
 
 ---
 
@@ -1079,11 +1079,11 @@ Add tests for `signInWithGoogle()` and `signInWithApple()`:
 
 **Acceptance criteria:**
 
-- [ ] Sign-in flows have tests for success, cancellation, and error paths
-- [ ] Onboarding screen has widget tests for navigation and completion
-- [ ] Notification provider has basic wiring test
-- [ ] Environment config parsing is tested
-- [ ] All new tests pass
+- [x] Sign-in flows have tests for success, cancellation, and error paths
+- [x] Onboarding screen has widget tests for navigation and completion
+- [x] Notification provider has basic wiring test
+- [x] Environment config parsing is tested
+- [x] All new tests pass
 
 ---
 
@@ -1104,9 +1104,9 @@ test('isPremiumProvider returns true when active entitlement exists', () async {
 
 **Acceptance criteria:**
 
-- [ ] Test exercises real provider logic, not re-implemented logic
-- [ ] Covers: no entitlements -> false, active entitlement -> true
-- [ ] Test passes
+- [x] Test exercises real provider logic, not re-implemented logic
+- [x] Covers: no entitlements -> false, active entitlement -> true
+- [x] Test passes
 
 ---
 
@@ -1124,10 +1124,10 @@ overrides:
 
 **Acceptance criteria:**
 
-- [ ] Integration test runs with `flutter test integration_test/`
-- [ ] Tests the full auth -> onboarding -> home flow
-- [ ] All external services mocked (no Firebase dependency)
-- [ ] Establishes the pattern for future integration tests
+- [x] Integration test runs with `flutter test integration_test/`
+- [x] Tests the full auth -> onboarding -> home flow
+- [x] All external services mocked (no Firebase dependency)
+- [x] Establishes the pattern for future integration tests
 
 ---
 
