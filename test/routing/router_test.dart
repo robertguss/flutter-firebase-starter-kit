@@ -2,10 +2,8 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_starter_kit/features/auth/models/user_profile.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
-import 'package:flutter_starter_kit/features/auth/services/auth_service.dart';
 import 'package:flutter_starter_kit/routing/router.dart';
 import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:flutter_starter_kit/shared/providers/shared_preferences_provider.dart';
@@ -13,9 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class MockAuthService extends Mock implements AuthService {}
-
-class MockUser extends Mock implements User {}
+import '../helpers/fixtures.dart';
+import '../helpers/mocks.dart';
 
 void main() {
   group('AppRoutes', () {
@@ -32,155 +29,163 @@ void main() {
     });
   });
 
-  group('Router redirect', () {
+  group('routerRedirect', () {
     late MockAuthService mockAuthService;
     late ProviderContainer container;
 
-    setUp(() async {
+    setUp(() {
       mockAuthService = MockAuthService();
-      SharedPreferences.setMockInitialValues({});
     });
 
     tearDown(() {
       container.dispose();
     });
 
-    test('GoRouter is created once and reused', () async {
-      when(() => mockAuthService.authStateChanges)
-          .thenAnswer((_) => Stream.value(null));
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-
-      container = ProviderContainer(
-        overrides: [
-          authServiceProvider.overrideWithValue(mockAuthService),
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+    ProviderContainer createContainer({
+      User? user,
+      bool onboardingComplete = true,
+    }) {
+      when(() => mockAuthService.authStateChanges).thenAnswer(
+        (_) => Stream.value(user),
       );
 
-      final router1 = container.read(routerProvider);
-      final router2 = container.read(routerProvider);
-      expect(identical(router1, router2), true);
-    });
+      final overrides = <Override>[
+        authServiceProvider.overrideWithValue(mockAuthService),
+      ];
 
-    test('unauthenticated user redirected to /auth', () async {
-      when(() => mockAuthService.authStateChanges)
-          .thenAnswer((_) => Stream.value(null));
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
+      if (user != null) {
+        final profile = createTestProfile(
+          uid: user.uid,
+          onboardingComplete: onboardingComplete,
+        );
+        overrides.add(
+          userProfileProvider.overrideWith((_) => Stream.value(profile)),
+        );
+      }
 
-      container = ProviderContainer(
-        overrides: [
-          authServiceProvider.overrideWithValue(mockAuthService),
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
-      );
+      return ProviderContainer(overrides: overrides);
+    }
 
+    test('redirects unauthenticated user to /auth', () async {
+      container = createContainer(user: null);
       await container.read(authStateProvider.future);
-      final router = container.read(routerProvider);
-      final redirect = router.configuration.redirect;
 
-      // Simulate redirect for /home when unauthenticated
-      // The redirect function gates all routes behind auth
-      expect(redirect, isNotNull);
+      expect(routerRedirect(_TestRef(container), '/home'), AppRoutes.auth);
     });
 
-    test('router does not rebuild on auth state change', () async {
-      final controller = StreamController<User?>.broadcast();
-      when(() => mockAuthService.authStateChanges)
-          .thenAnswer((_) => controller.stream);
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
+    test('unauthenticated user on /auth is not redirected', () async {
+      container = createContainer(user: null);
+      await container.read(authStateProvider.future);
 
-      container = ProviderContainer(
-        overrides: [
-          authServiceProvider.overrideWithValue(mockAuthService),
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
-      );
+      expect(routerRedirect(_TestRef(container), '/auth'), isNull);
+    });
 
-      final router1 = container.read(routerProvider);
-
-      // Emit auth state change
+    test('authenticated user on /auth is redirected to /home', () async {
       final mockUser = MockUser();
-      controller.add(mockUser);
-      await Future<void>.delayed(Duration.zero);
+      when(() => mockUser.uid).thenReturn('uid-1');
+      container = createContainer(user: mockUser);
+      await container.read(authStateProvider.future);
+      await container.read(userProfileProvider.future);
 
-      // Router should be the same instance (not rebuilt)
-      final router2 = container.read(routerProvider);
-      expect(identical(router1, router2), true);
-
-      await controller.close();
+      expect(routerRedirect(_TestRef(container), '/auth'), AppRoutes.home);
     });
 
     test('authenticated user with incomplete onboarding redirected to /onboarding', () async {
       final mockUser = MockUser();
       when(() => mockUser.uid).thenReturn('uid-1');
-      when(() => mockAuthService.authStateChanges)
-          .thenAnswer((_) => Stream.value(mockUser));
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-
-      final profile = UserProfile(
-        uid: 'uid-1',
-        onboardingComplete: false,
-        createdAt: DateTime(2026, 1, 1),
-      );
-
-      container = ProviderContainer(
-        overrides: [
-          authServiceProvider.overrideWithValue(mockAuthService),
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          userProfileProvider.overrideWith(
-            (ref) => Stream.value(profile),
-          ),
-        ],
-      );
-
+      container = createContainer(user: mockUser, onboardingComplete: false);
       await container.read(authStateProvider.future);
       await container.read(userProfileProvider.future);
 
-      // Test redirect logic: authenticated user with incomplete onboarding
-      // should be redirected away from /home to /onboarding
-      final authState = container.read(authStateProvider);
-      expect(authState.valueOrNull, isNotNull);
-      final userProfile = container.read(userProfileProvider).valueOrNull;
-      expect(userProfile, isNotNull);
-      expect(userProfile!.onboardingComplete, false);
+      expect(
+        routerRedirect(_TestRef(container), '/home'),
+        AppRoutes.onboarding,
+      );
     });
 
-    test('authenticated user with completed onboarding stays on /home', () async {
+    test('authenticated user with complete onboarding stays on /home', () async {
       final mockUser = MockUser();
       when(() => mockUser.uid).thenReturn('uid-1');
-      when(() => mockAuthService.authStateChanges)
-          .thenAnswer((_) => Stream.value(mockUser));
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-
-      final profile = UserProfile(
-        uid: 'uid-1',
-        onboardingComplete: true,
-        createdAt: DateTime(2026, 1, 1),
-      );
-
-      container = ProviderContainer(
-        overrides: [
-          authServiceProvider.overrideWithValue(mockAuthService),
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          userProfileProvider.overrideWith(
-            (ref) => Stream.value(profile),
-          ),
-        ],
-      );
-
+      container = createContainer(user: mockUser, onboardingComplete: true);
       await container.read(authStateProvider.future);
       await container.read(userProfileProvider.future);
 
-      // Test redirect logic: authenticated user with complete onboarding
-      // should not be redirected
-      final userProfile = container.read(userProfileProvider).valueOrNull;
-      expect(userProfile, isNotNull);
-      expect(userProfile!.onboardingComplete, true);
+      expect(routerRedirect(_TestRef(container), '/home'), isNull);
+    });
+
+    test('authenticated user on /onboarding is not redirected', () async {
+      final mockUser = MockUser();
+      when(() => mockUser.uid).thenReturn('uid-1');
+      container = createContainer(user: mockUser, onboardingComplete: false);
+      await container.read(authStateProvider.future);
+      await container.read(userProfileProvider.future);
+
+      expect(routerRedirect(_TestRef(container), '/onboarding'), isNull);
     });
   });
+
+  group('Router instance', () {
+    test('GoRouter is created once and reused', () async {
+      final mockAuthService = MockAuthService();
+      when(() => mockAuthService.authStateChanges)
+          .thenAnswer((_) => Stream.value(null));
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      final container = ProviderContainer(
+        overrides: [
+          authServiceProvider.overrideWithValue(mockAuthService),
+          sharedPreferencesProvider.overrideWithValue(prefs),
+        ],
+      );
+
+      final router1 = container.read(routerProvider);
+      final router2 = container.read(routerProvider);
+      expect(identical(router1, router2), true);
+
+      container.dispose();
+    });
+
+    test('router does not rebuild on auth state change', () async {
+      final controller = StreamController<User?>.broadcast();
+      final mockAuthService = MockAuthService();
+      when(() => mockAuthService.authStateChanges)
+          .thenAnswer((_) => controller.stream);
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      final container = ProviderContainer(
+        overrides: [
+          authServiceProvider.overrideWithValue(mockAuthService),
+          sharedPreferencesProvider.overrideWithValue(prefs),
+        ],
+      );
+
+      final router1 = container.read(routerProvider);
+
+      final mockUser = MockUser();
+      controller.add(mockUser);
+      await Future<void>.delayed(Duration.zero);
+
+      final router2 = container.read(routerProvider);
+      expect(identical(router1, router2), true);
+
+      container.dispose();
+      await controller.close();
+    });
+  });
+}
+
+/// Minimal Ref adapter that delegates reads to a ProviderContainer.
+/// This allows testing routerRedirect without needing a full widget tree.
+class _TestRef implements Ref {
+  _TestRef(this._container);
+  final ProviderContainer _container;
+
+  @override
+  T read<T>(ProviderListenable<T> provider) => _container.read(provider);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw UnimplementedError('Only read() is supported in test ref');
 }

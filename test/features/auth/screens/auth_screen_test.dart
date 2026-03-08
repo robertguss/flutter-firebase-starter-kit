@@ -4,14 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/screens/auth_screen.dart';
-import 'package:flutter_starter_kit/features/auth/services/auth_service.dart';
 import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockAuthService extends Mock implements AuthService {}
-
-class MockUserCredential extends Mock implements UserCredential {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   late MockAuthService mockAuthService;

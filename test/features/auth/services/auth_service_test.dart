@@ -1,19 +1,23 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_starter_kit/features/auth/services/auth_service.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockFirebaseAuth extends Mock implements FirebaseAuth {}
+import '../../../helpers/mocks.dart';
 
-class MockUser extends Mock implements User {}
+class _FakeAuthCredential extends Fake implements AuthCredential {}
 
-class MockGoogleSignIn extends Mock implements GoogleSignIn {}
+class _FakeAuthProvider extends Fake implements AuthProvider {}
 
 void main() {
   late AuthService authService;
   late MockFirebaseAuth mockAuth;
   late MockGoogleSignIn mockGoogleSignIn;
+
+  setUpAll(() {
+    registerFallbackValue(_FakeAuthCredential());
+    registerFallbackValue(_FakeAuthProvider());
+  });
 
   setUp(() {
     mockAuth = MockFirebaseAuth();
@@ -108,6 +112,82 @@ void main() {
           'requires-recent-login',
         )),
       );
+    });
+
+    group('signInWithGoogle', () {
+      test('successful sign-in returns UserCredential', () async {
+        final mockAccount = MockGoogleSignInAccount();
+        final mockGoogleAuth = MockGoogleSignInAuthentication();
+        final mockCredential = MockUserCredential();
+
+        when(() => mockGoogleSignIn.signIn())
+            .thenAnswer((_) async => mockAccount);
+        when(() => mockAccount.authentication)
+            .thenAnswer((_) async => mockGoogleAuth);
+        when(() => mockGoogleAuth.accessToken).thenReturn('access-token');
+        when(() => mockGoogleAuth.idToken).thenReturn('id-token');
+        when(() => mockAuth.signInWithCredential(any()))
+            .thenAnswer((_) async => mockCredential);
+
+        final result = await authService.signInWithGoogle();
+
+        expect(result, mockCredential);
+        verify(() => mockAuth.signInWithCredential(any())).called(1);
+      });
+
+      test('cancelled sign-in throws exception', () async {
+        when(() => mockGoogleSignIn.signIn()).thenAnswer((_) async => null);
+
+        expect(
+          () => authService.signInWithGoogle(),
+          throwsA(isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('cancelled'),
+          )),
+        );
+      });
+
+      test('network error propagates', () async {
+        when(() => mockGoogleSignIn.signIn()).thenThrow(
+          FirebaseAuthException(
+            code: 'network-request-failed',
+            message: 'Network error',
+          ),
+        );
+
+        expect(
+          () => authService.signInWithGoogle(),
+          throwsA(isA<FirebaseAuthException>()),
+        );
+      });
+    });
+
+    group('signInWithApple', () {
+      test('successful sign-in returns UserCredential', () async {
+        final mockCredential = MockUserCredential();
+        when(() => mockAuth.signInWithProvider(any()))
+            .thenAnswer((_) async => mockCredential);
+
+        final result = await authService.signInWithApple();
+
+        expect(result, mockCredential);
+        verify(() => mockAuth.signInWithProvider(any())).called(1);
+      });
+
+      test('error propagates', () async {
+        when(() => mockAuth.signInWithProvider(any())).thenThrow(
+          FirebaseAuthException(
+            code: 'network-request-failed',
+            message: 'Network error',
+          ),
+        );
+
+        expect(
+          () => authService.signInWithApple(),
+          throwsA(isA<FirebaseAuthException>()),
+        );
+      });
     });
   });
 }

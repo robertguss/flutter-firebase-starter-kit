@@ -3,26 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
 import 'package:flutter_starter_kit/features/paywall/screens/paywall_screen.dart';
-import 'package:flutter_starter_kit/features/paywall/services/purchases_service.dart';
 import 'package:flutter_starter_kit/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
 
-class MockPurchasesService extends Mock implements PurchasesService {}
-
-class MockCustomerInfo extends Mock implements CustomerInfo {}
-
-class MockEntitlementInfos extends Mock implements EntitlementInfos {}
-
-class MockOfferings extends Mock implements Offerings {}
-
-class MockOffering extends Mock implements Offering {}
-
-class MockPackage extends Mock implements Package {}
-
-class MockStoreProduct extends Mock implements StoreProduct {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   late MockPurchasesService mockService;
