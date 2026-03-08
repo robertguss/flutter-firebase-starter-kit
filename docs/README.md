@@ -19,6 +19,8 @@ If you are setting up specific integrations:
 
 - [Firebase and Authentication Setup](./guides/firebase-authentication-setup.md)
 - [RevenueCat Setup](./guides/revenuecat-setup.md)
+- [iOS Flavor Schemes](./guides/ios-flavor-schemes.md)
+- [Removing Features](./guides/removing-features.md)
 
 Release history lives in [CHANGELOG.md](./CHANGELOG.md).
 

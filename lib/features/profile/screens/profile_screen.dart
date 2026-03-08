@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/features/auth/providers/delete_account_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/sign_out_provider.dart';
 import 'package:flutter_starter_kit/features/auth/providers/user_profile_provider.dart';
+import 'package:flutter_starter_kit/config/app_config.dart';
+import 'package:flutter_starter_kit/features/notifications/providers/notification_preference_provider.dart';
 import 'package:flutter_starter_kit/features/profile/providers/profile_providers.dart';
 import 'package:flutter_starter_kit/features/profile/widgets/avatar_picker.dart';
 import 'package:flutter_starter_kit/features/settings/widgets/settings_section.dart';
@@ -92,7 +94,54 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ],
 
+              // Profile completion
+              if (profile.completionPercentage < 1.0) ...[
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.profileCompletion(
+                          (profile.completionPercentage * 100).round().toString(),
+                        ),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: profile.completionPercentage,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
               const SizedBox(height: 32),
+
+              // Preferences section
+              if (AppConfig.enableNotifications)
+                SettingsSection(
+                  title: l10n.preferences,
+                  children: [
+                    SwitchListTile(
+                      secondary: const Icon(Icons.notifications_outlined),
+                      title: Text(l10n.notifications),
+                      subtitle: Text(l10n.notificationsDescription),
+                      value: ref.watch(notificationPreferenceProvider),
+                      onChanged: (value) {
+                        ref
+                            .read(notificationPreferenceProvider.notifier)
+                            .setEnabled(value);
+                      },
+                    ),
+                  ],
+                ),
+
+              const SizedBox(height: 16),
 
               // Account section
               SettingsSection(

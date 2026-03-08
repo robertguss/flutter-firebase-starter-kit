@@ -19,6 +19,20 @@ every time you start a new product.
 - Firebase Cloud Messaging service scaffolding
 - Tests for core providers and services
 
+## Screenshots
+
+<!-- TODO: Capture screenshots by running the app on a simulator and replace these placeholders -->
+<!-- To capture screenshots:
+  1. Run `make run-dev` to launch the app on a simulator
+  2. Navigate to each screen and take a screenshot (Cmd+S in Simulator)
+  3. Save images to docs/screenshots/ (e.g., auth.png, home.png, settings.png, profile.png)
+  4. Update the image paths below
+-->
+
+| Auth                               | Home                               | Profile                                  | Settings                                   |
+| ---------------------------------- | ---------------------------------- | ---------------------------------------- | ------------------------------------------ |
+| ![Auth](docs/screenshots/auth.png) | ![Home](docs/screenshots/home.png) | ![Profile](docs/screenshots/profile.png) | ![Settings](docs/screenshots/settings.png) |
+
 ## Who This Is For
 
 This starter kit is a good fit if you want to launch a Flutter mobile app and
