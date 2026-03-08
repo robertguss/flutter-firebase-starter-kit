@@ -855,7 +855,7 @@ Text(AppLocalizations.of(context)!.signInPrompt)
 - [x] `flutter gen-l10n` generates localization files
 - [x] All user-facing strings extracted to `app_en.arb`
 - [x] Widgets use `AppLocalizations.of(context)` for strings
-- [ ] Adding a new locale is documented (create `app_XX.arb`, add locale to
+- [x] Adding a new locale is documented (create `app_XX.arb`, add locale to
       supported list)
 - [x] Dynamic strings with interpolation handled correctly (e.g., "Hello,
       {name}")
@@ -901,7 +901,7 @@ jobs:
 - [x] CI runs on PR and push to main
 - [x] Runs analyze + test
 - [x] Uses current Flutter stable version
-- [ ] Build runner step included for codegen
+- [x] Build runner step included for codegen
 
 ---
 
