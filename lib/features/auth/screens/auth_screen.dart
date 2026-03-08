@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/auth/providers/auth_provider.dart';
 import 'package:flutter_starter_kit/features/auth/widgets/social_login_buttons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -32,10 +33,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     try {
       await method();
       if (AppConfig.enableAnalytics) {
-        FirebaseAnalytics.instance.logEvent(
-          name: 'app_sign_in',
-          parameters: {'method': providerName},
-        );
+        final prefs = await SharedPreferences.getInstance();
+        final hasConsent = prefs.getBool('analytics_consent') ?? false;
+        if (hasConsent) {
+          FirebaseAnalytics.instance.logEvent(
+            name: 'app_sign_in',
+            parameters: {'method': providerName},
+          );
+        }
       }
     } on FirebaseAuthException {
       _setError(l10n.authenticationError);

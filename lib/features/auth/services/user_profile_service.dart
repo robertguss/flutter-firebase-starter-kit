@@ -31,25 +31,53 @@ class UserProfileService {
   }
 
   Future<void> markOnboardingComplete(String uid) async {
-    await _users.doc(uid).update({'onboardingComplete': true});
+    final doc = await _users.doc(uid).get();
+    if (!doc.exists) {
+      // Create profile if it doesn't exist
+      await createOrUpdateProfile(uid, {'onboardingComplete': true});
+    } else {
+      await _users.doc(uid).update({'onboardingComplete': true});
+    }
   }
 
   Future<void> updateFcmToken(String uid, String token) async {
-    await _users.doc(uid).update({'fcmToken': token});
+    final doc = await _users.doc(uid).get();
+    if (!doc.exists) {
+      // Create profile if it doesn't exist
+      await createOrUpdateProfile(uid, {'fcmToken': token});
+    } else {
+      await _users.doc(uid).update({'fcmToken': token});
+    }
   }
 
   Future<void> updateDisplayName(String uid, String displayName) async {
-    await _users.doc(uid).update({'displayName': displayName});
+    final doc = await _users.doc(uid).get();
+    if (!doc.exists) {
+      // Create profile if it doesn't exist
+      await createOrUpdateProfile(uid, {'displayName': displayName});
+    } else {
+      await _users.doc(uid).update({'displayName': displayName});
+    }
   }
 
   Future<void> updateAvatarUrl(String uid, String? photoUrl) async {
-    await _users.doc(uid).update({
-      'photoUrl': photoUrl ?? FieldValue.delete(),
-    });
+    final doc = await _users.doc(uid).get();
+    if (!doc.exists) {
+      // Create profile if it doesn't exist
+      await createOrUpdateProfile(uid, {'photoUrl': photoUrl});
+    } else {
+      await _users.doc(uid).update({
+        'photoUrl': photoUrl ?? FieldValue.delete(),
+      });
+    }
   }
 
   Future<void> clearFcmToken(String uid) async {
-    await _users.doc(uid).update({'fcmToken': FieldValue.delete()});
+    final doc = await _users.doc(uid).get();
+    if (doc.exists) {
+      await _users.doc(uid).update({'fcmToken': FieldValue.delete()});
+    }
+    // Silently succeed if profile doesn't exist
   }
 
   Future<void> deleteProfile(String uid) async {

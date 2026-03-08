@@ -12,8 +12,10 @@ class AppConfig {
     defaultValue: '',
   );
 
-  // Legal — TODO: Replace with your app's legal URLs before publishing
+  // Legal — Replace with your app's legal URLs before publishing
+  @Deprecated('Replace with your actual privacy policy URL before publishing')
   static const String privacyPolicyUrl = 'https://example.com/privacy';
+  @Deprecated('Replace with your actual terms of service URL before publishing')
   static const String termsOfServiceUrl = 'https://example.com/terms';
 
   /// Call in debug mode to warn about placeholder URLs.

@@ -7,6 +7,7 @@ import 'package:flutter_starter_kit/config/app_config.dart';
 import 'package:flutter_starter_kit/features/paywall/providers/purchases_provider.dart';
 import 'package:flutter_starter_kit/features/paywall/widgets/feature_comparison_row.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PaywallScreen extends ConsumerStatefulWidget {
   const PaywallScreen({super.key});
@@ -92,23 +93,23 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
-              const FeatureComparisonRow(
-                feature: 'Feature',
+              FeatureComparisonRow(
+                feature: l10n.feature,
                 freeIncluded: true,
                 premiumIncluded: true,
               ),
-              const FeatureComparisonRow(
-                feature: 'Basic Access',
+              FeatureComparisonRow(
+                feature: l10n.basicAccess,
                 freeIncluded: true,
                 premiumIncluded: true,
               ),
-              const FeatureComparisonRow(
-                feature: 'Premium Feature 1',
+              FeatureComparisonRow(
+                feature: l10n.premiumFeature1,
                 freeIncluded: false,
                 premiumIncluded: true,
               ),
-              const FeatureComparisonRow(
-                feature: 'Premium Feature 2',
+              FeatureComparisonRow(
+                feature: l10n.premiumFeature2,
                 freeIncluded: false,
                 premiumIncluded: true,
               ),
@@ -142,12 +143,16 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
                                 try {
                                   if (AppConfig.enableAnalytics) {
-                                    FirebaseAnalytics.instance.logEvent(
-                                      name: 'purchase_started',
-                                      parameters: {
-                                        'product_id': package.storeProduct.identifier,
-                                      },
-                                    );
+                                    final prefs = await SharedPreferences.getInstance();
+                                    final hasConsent = prefs.getBool('analytics_consent') ?? false;
+                                    if (hasConsent) {
+                                      FirebaseAnalytics.instance.logEvent(
+                                        name: 'purchase_started',
+                                        parameters: {
+                                          'product_id': package.storeProduct.identifier,
+                                        },
+                                      );
+                                    }
                                   }
                                   final service =
                                       ref.read(purchasesServiceProvider);

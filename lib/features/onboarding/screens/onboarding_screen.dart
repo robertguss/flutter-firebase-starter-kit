@@ -10,6 +10,7 @@ import 'package:flutter_starter_kit/features/onboarding/widgets/onboarding_page.
 import 'package:flutter_starter_kit/features/onboarding/widgets/progress_dots.dart';
 import 'package:flutter_starter_kit/routing/routes.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -22,36 +23,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   static const _totalPages = 3;
 
-  // Replace these pages with your app-specific onboarding content.
-  // Keep three pages: overview, key feature, and call to action.
-  final _pages = const [
-    OnboardingPage(
-      title: 'Welcome to AppName',
-      description:
-          'Your all-in-one solution for staying organized and productive. '
-          'We help you focus on what matters most.',
-      icon: Icons.rocket_launch,
-    ),
-    OnboardingPage(
-      title: 'Stay on Track',
-      description:
-          'Set goals, track your progress, and celebrate your wins. '
-          'Smart reminders keep you moving forward every day.',
-      icon: Icons.trending_up,
-    ),
-    OnboardingPage(
-      title: 'Get Started',
-      description:
-          'You\'re all set! Dive in and explore everything the app has '
-          'to offer. Your journey starts now.',
-      icon: Icons.check_circle_outline,
-    ),
-  ];
-
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  List<OnboardingPage> _buildPages(AppLocalizations l10n) {
+    return [
+      OnboardingPage(
+        title: l10n.onboardingWelcomeTitle,
+        description: l10n.onboardingWelcomeDescription,
+        icon: Icons.rocket_launch,
+      ),
+      OnboardingPage(
+        title: l10n.onboardingTrackTitle,
+        description: l10n.onboardingTrackDescription,
+        icon: Icons.trending_up,
+      ),
+      OnboardingPage(
+        title: l10n.onboardingGetStartedTitle,
+        description: l10n.onboardingGetStartedDescription,
+        icon: Icons.check_circle_outline,
+      ),
+    ];
   }
 
   Future<void> _completeOnboarding() async {
@@ -60,7 +55,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       await ref.read(userProfileServiceProvider).markOnboardingComplete(user.uid);
     }
     if (AppConfig.enableAnalytics) {
-      FirebaseAnalytics.instance.logEvent(name: 'onboarding_complete');
+      final prefs = await SharedPreferences.getInstance();
+      final hasConsent = prefs.getBool('analytics_consent') ?? false;
+      if (hasConsent) {
+        FirebaseAnalytics.instance.logEvent(name: 'onboarding_complete');
+      }
     }
     if (mounted) {
       context.go(AppRoutes.home);
@@ -72,6 +71,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final currentPage = ref.watch(onboardingProvider);
     final isLastPage = currentPage == _totalPages - 1;
     final l10n = AppLocalizations.of(context)!;
+    final pages = _buildPages(l10n);
 
     return Scaffold(
       body: SafeArea(
@@ -90,7 +90,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 onPageChanged: (page) {
                   ref.read(onboardingProvider.notifier).goToPage(page);
                 },
-                children: _pages,
+                children: pages,
               ),
             ),
             ProgressDots(total: _totalPages, current: currentPage),

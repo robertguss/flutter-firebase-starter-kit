@@ -157,26 +157,28 @@ void main() {
     });
 
     group('error handling', () {
-      test('markOnboardingComplete throws on nonexistent document', () async {
-        // fake_cloud_firestore's update() on a missing doc throws
-        expect(
-          () => service.markOnboardingComplete('nonexistent'),
-          throwsA(anything),
-        );
+      test('markOnboardingComplete creates profile if nonexistent', () async {
+        // Service creates profile if it doesn't exist
+        await service.markOnboardingComplete('nonexistent');
+
+        final doc = await fakeFirestore.collection('users').doc('nonexistent').get();
+        expect(doc.exists, true);
+        expect(doc.data()?['onboardingComplete'], true);
       });
 
-      test('updateFcmToken throws on nonexistent document', () async {
-        expect(
-          () => service.updateFcmToken('nonexistent', 'token'),
-          throwsA(anything),
-        );
+      test('updateFcmToken creates profile if nonexistent', () async {
+        // Service creates profile if it doesn't exist
+        await service.updateFcmToken('nonexistent', 'token');
+
+        final doc = await fakeFirestore.collection('users').doc('nonexistent').get();
+        expect(doc.exists, true);
+        expect(doc.data()?['fcmToken'], 'token');
       });
 
-      test('clearFcmToken throws on nonexistent document', () async {
-        expect(
-          () => service.clearFcmToken('nonexistent'),
-          throwsA(anything),
-        );
+      test('clearFcmToken succeeds on nonexistent document', () async {
+        // Service handles missing document gracefully - no-op
+        await service.clearFcmToken('nonexistent');
+        // Should not throw
       });
 
       test('getProfile returns null for missing document, not exception',
