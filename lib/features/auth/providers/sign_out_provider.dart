@@ -14,6 +14,8 @@ part 'sign_out_provider.g.dart';
 /// 2. Run feature-specific cleanup hooks (RevenueCat logout, etc.)
 /// 3. Invalidate user-specific providers
 /// 4. Auth sign-out (triggers router redirect via refreshListenable)
+/// Use with `ref.read(signOutProvider.future)` only. Do not `ref.watch` —
+/// the future would re-execute on every widget rebuild.
 @riverpod
 Future<void> signOut(Ref ref) async {
   final user = ref.read(authStateProvider).value;

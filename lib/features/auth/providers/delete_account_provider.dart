@@ -18,6 +18,8 @@ part 'delete_account_provider.g.dart';
 /// TODO: Firestore does not cascade-delete sub-collections. If your app adds
 /// sub-collections under user documents, use a Cloud Function triggered on
 /// user deletion to recursively clean up all user data.
+/// Use with `ref.read(deleteAccountProvider.future)` only. Do not `ref.watch` —
+/// the future would re-execute on every widget rebuild.
 @riverpod
 Future<void> deleteAccount(Ref ref) async {
   final user = ref.read(authStateProvider).value;

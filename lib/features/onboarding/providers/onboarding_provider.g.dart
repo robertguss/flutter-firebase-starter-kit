@@ -19,7 +19,7 @@ final class OnboardingProvider extends $NotifierProvider<Onboarding, int> {
         argument: null,
         retry: null,
         name: r'onboardingProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -40,7 +40,7 @@ final class OnboardingProvider extends $NotifierProvider<Onboarding, int> {
   }
 }
 
-String _$onboardingHash() => r'390380a80d9c13b9a238eec19033821bccb60408';
+String _$onboardingHash() => r'f70d007160dc4808d4152e678ba74399957a8341';
 
 abstract class _$Onboarding extends $Notifier<int> {
   int build();

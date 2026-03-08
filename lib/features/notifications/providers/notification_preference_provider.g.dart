@@ -20,7 +20,7 @@ final class NotificationPreferenceProvider
         argument: null,
         retry: null,
         name: r'notificationPreferenceProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -42,7 +42,7 @@ final class NotificationPreferenceProvider
 }
 
 String _$notificationPreferenceHash() =>
-    r'43f88bcaba17baac47d0a220753e489ba00925f3';
+    r'121f49286c98da5f26c3706838f110582bbdd256';
 
 abstract class _$NotificationPreference extends $Notifier<bool> {
   bool build();

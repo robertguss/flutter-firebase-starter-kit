@@ -19,6 +19,8 @@ part of 'delete_account_provider.dart';
 /// TODO: Firestore does not cascade-delete sub-collections. If your app adds
 /// sub-collections under user documents, use a Cloud Function triggered on
 /// user deletion to recursively clean up all user data.
+/// Use with `ref.read(deleteAccountProvider.future)` only. Do not `ref.watch` —
+/// the future would re-execute on every widget rebuild.
 
 @ProviderFor(deleteAccount)
 const deleteAccountProvider = DeleteAccountProvider._();
@@ -34,6 +36,8 @@ const deleteAccountProvider = DeleteAccountProvider._();
 /// TODO: Firestore does not cascade-delete sub-collections. If your app adds
 /// sub-collections under user documents, use a Cloud Function triggered on
 /// user deletion to recursively clean up all user data.
+/// Use with `ref.read(deleteAccountProvider.future)` only. Do not `ref.watch` —
+/// the future would re-execute on every widget rebuild.
 
 final class DeleteAccountProvider
     extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
@@ -49,6 +53,8 @@ final class DeleteAccountProvider
   /// TODO: Firestore does not cascade-delete sub-collections. If your app adds
   /// sub-collections under user documents, use a Cloud Function triggered on
   /// user deletion to recursively clean up all user data.
+  /// Use with `ref.read(deleteAccountProvider.future)` only. Do not `ref.watch` —
+  /// the future would re-execute on every widget rebuild.
   const DeleteAccountProvider._()
     : super(
         from: null,

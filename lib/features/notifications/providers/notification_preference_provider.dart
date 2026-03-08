@@ -5,7 +5,7 @@ part 'notification_preference_provider.g.dart';
 
 const _notificationsEnabledKey = 'notifications_enabled';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class NotificationPreference extends _$NotificationPreference {
   @override
   bool build() {

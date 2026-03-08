@@ -13,6 +13,8 @@ part of 'sign_out_provider.dart';
 /// 2. Run feature-specific cleanup hooks (RevenueCat logout, etc.)
 /// 3. Invalidate user-specific providers
 /// 4. Auth sign-out (triggers router redirect via refreshListenable)
+/// Use with `ref.read(signOutProvider.future)` only. Do not `ref.watch` —
+/// the future would re-execute on every widget rebuild.
 
 @ProviderFor(signOut)
 const signOutProvider = SignOutProvider._();
@@ -22,6 +24,8 @@ const signOutProvider = SignOutProvider._();
 /// 2. Run feature-specific cleanup hooks (RevenueCat logout, etc.)
 /// 3. Invalidate user-specific providers
 /// 4. Auth sign-out (triggers router redirect via refreshListenable)
+/// Use with `ref.read(signOutProvider.future)` only. Do not `ref.watch` —
+/// the future would re-execute on every widget rebuild.
 
 final class SignOutProvider
     extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
@@ -31,6 +35,8 @@ final class SignOutProvider
   /// 2. Run feature-specific cleanup hooks (RevenueCat logout, etc.)
   /// 3. Invalidate user-specific providers
   /// 4. Auth sign-out (triggers router redirect via refreshListenable)
+  /// Use with `ref.read(signOutProvider.future)` only. Do not `ref.watch` —
+  /// the future would re-execute on every widget rebuild.
   const SignOutProvider._()
     : super(
         from: null,
